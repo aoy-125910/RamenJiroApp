@@ -310,7 +310,6 @@ textarea:focus-visible {
 .store-card:focus-visible,
 .ranking-list button:hover,
 .note-card:hover,
-.map-pin:hover,
 .filter-chip:hover,
 .choice-chip:hover,
 .ghost-button:hover,
@@ -393,60 +392,110 @@ textarea:focus-visible {
   background: linear-gradient(180deg, rgba(255, 250, 244, 0.9), rgba(245, 226, 197, 0.92));
 }
 
-.map-illustration {
+.map-canvas,
+.map-frame .leaflet-container {
   width: 100%;
-  height: 100%;
+  min-height: 360px;
+  height: min(54vh, 460px);
+  background: #ead2ad;
+}
+
+.map-frame .leaflet-container {
+  font: inherit;
+}
+
+.map-frame .leaflet-control-zoom {
+  border: 0;
+  box-shadow: 0 16px 32px rgba(47, 26, 15, 0.18);
+}
+
+.map-frame .leaflet-control-zoom a {
+  width: 40px;
+  height: 40px;
+  line-height: 38px;
+  color: var(--ink);
+  background: rgba(255, 251, 246, 0.96);
+}
+
+.map-frame .leaflet-control-attribution {
+  padding: 0.2rem 0.4rem;
+  border-radius: 10px 0 0 0;
+  background: rgba(255, 248, 239, 0.84);
+}
+
+.map-frame .leaflet-popup-content-wrapper {
+  border-radius: 18px;
+  background: rgba(255, 248, 239, 0.96);
+  box-shadow: 0 20px 40px rgba(47, 26, 15, 0.16);
+}
+
+.map-frame .leaflet-popup-tip {
+  background: rgba(255, 248, 239, 0.96);
+}
+
+.map-popup {
+  min-width: 120px;
+  color: var(--ink);
+}
+
+.map-popup strong {
   display: block;
+  margin-bottom: 0.25rem;
 }
 
-.map-pins {
-  position: absolute;
-  inset: 0;
+.map-popup p {
+  margin: 0;
+  color: var(--subtle);
+  line-height: 1.45;
 }
 
-.map-pin {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  margin: -9px 0 0 -9px;
+.map-popup__status {
+  margin-top: 0.35rem;
+  font-weight: 700;
+}
+
+.map-marker-shell {
   background: transparent;
+  border: 0;
 }
 
-.map-pin span {
+.map-marker-icon {
+  position: relative;
   display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 18px rgba(47, 26, 15, 0.22);
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 20px rgba(47, 26, 15, 0.22);
+  transform: rotate(-45deg);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.map-pin::after {
+.map-marker-icon::after {
   content: "";
   position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 2px;
-  height: 8px;
-  transform: translateX(-50%);
-  background: rgba(47, 26, 15, 0.22);
+  inset: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
 }
 
-.map-pin.is-not_visited span {
-  background: #72604c;
+.map-marker-icon.is-not_visited {
+  background: #786250;
 }
 
-.map-pin.is-wishlist span {
+.map-marker-icon.is-wishlist {
   background: var(--olive);
 }
 
-.map-pin.is-visited span {
+.map-marker-icon.is-visited {
   background: var(--accent);
 }
 
-.map-pin.is-active span {
-  transform: scale(1.28);
+.map-marker-icon.is-active {
+  transform: rotate(-45deg) scale(1.14);
+  box-shadow: 0 12px 24px rgba(47, 26, 15, 0.28);
 }
 
 .map-detail {
@@ -462,6 +511,16 @@ textarea:focus-visible {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.map-detail__actions {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.map-detail__button {
+  min-width: 136px;
 }
 
 .ranking-list,

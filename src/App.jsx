@@ -87,8 +87,14 @@ export default function App() {
 
   const noteStores = storesWithRecords.filter((store) => store.record.note).slice(0, 3);
 
+  const selectedStore =
+    storesWithRecords.find((store) => store.id === selectedStoreId) ?? storesWithRecords[0];
   const editingStore =
     storesWithRecords.find((store) => store.id === editingStoreId) ?? null;
+
+  function handleMapSelect(storeId) {
+    setSelectedStoreId(storeId);
+  }
 
   function openEditor(storeId) {
     setSelectedStoreId(storeId);
@@ -160,7 +166,9 @@ export default function App() {
         <MapPreview
           stores={storesWithRecords}
           selectedStoreId={selectedStoreId}
-          onSelect={openEditor}
+          selectedStore={selectedStore}
+          onSelect={handleMapSelect}
+          onOpen={openEditor}
         />
 
         <section className="section-card">
@@ -285,4 +293,3 @@ export default function App() {
     </>
   );
 }
-
