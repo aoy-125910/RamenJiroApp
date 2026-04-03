@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
+import { BottomTabBar } from './components/BottomTabBar';
 import { MapPreview } from './components/MapPreview';
+import { RankingTab } from './components/RankingTab';
 import { RecordDrawer } from './components/RecordDrawer';
 import { StatusPill } from './components/StatusPill';
 import { StoreCard } from './components/StoreCard';
 import { stores } from './data/stores';
 import {
   createEmptyRecord,
+  loadRanking,
   loadRecords,
   normalizeRecordInput,
+  saveRanking,
   saveRecords
 } from './lib/storage';
 
@@ -43,10 +47,21 @@ function formatPercent(value) {
   return `${Math.round(value)}%`;
 }
 
+function areSameOrder(left, right) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, index) => value === right[index]);
+}
+
 export default function App() {
   const [records, setRecords] = useState(() => loadRecords());
+  const [rankingStoreIds, setRankingStoreIds] = useState(() => loadRanking());
   const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('map');
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id ?? null);
   const [editingStoreId, setEditingStoreId] = useState(null);
   const [selectionSource, setSelectionSource] = useState('initial');
@@ -55,13 +70,27 @@ export default function App() {
     saveRecords(records);
   }, [records]);
 
+  useEffect(() => {
+    saveRanking(rankingStoreIds);
+  }, [rankingStoreIds]);
+
+  const rankingPositionByStoreId = new Map(
+    rankingStoreIds.map((storeId, index) => [storeId, index + 1])
+  );
+
   const storesWithRecords = stores.map((store) => ({
     ...store,
     record: {
       ...createEmptyRecord(),
       ...(records[store.id] ?? {})
-    }
+    },
+    rankingPosition: rankingPositionByStoreId.get(store.id) ?? null
   }));
+
+  const storeMap = new Map(storesWithRecords.map((store) => [store.id, store]));
+  const visitedStoreIds = storesWithRecords
+    .filter((store) => store.record.status === 'visited')
+    .map((store) => store.id);
 
   const visitedCount = storesWithRecords.filter(
     (store) => store.record.status === 'visited'
@@ -74,23 +103,38 @@ export default function App() {
   ).size;
   const completionRate = stores.length === 0 ? 0 : (visitedCount / stores.length) * 100;
 
+  useEffect(() => {
+    setRankingStoreIds((current) => {
+      const next = [
+        ...current.filter((storeId) => visitedStoreIds.includes(storeId)),
+        ...visitedStoreIds.filter((storeId) => !current.includes(storeId))
+      ];
+
+      return areSameOrder(current, next) ? current : next;
+    });
+  }, [visitedStoreIds.join('|')]);
+
   const filteredStores = storesWithRecords.filter(
-    (store) => matchesFilter(statusFilter, store) && includesQuery(query, store)
+    (store) =>
+      matchesFilter(statusFilter, store) && includesQuery(deferredQuery, store)
   );
 
-  const rankedStores = storesWithRecords
-    .filter((store) => store.record.status === 'visited' && store.record.rank)
-    .sort((left, right) => {
-      const rankDiff = Number(left.record.rank) - Number(right.record.rank);
+  const rankedStores = rankingStoreIds
+    .map((storeId) => storeMap.get(storeId))
+    .filter((store) => store?.record.status === 'visited');
 
-      if (rankDiff !== 0) {
-        return rankDiff;
+  const noteStores = storesWithRecords
+    .filter((store) => store.record.note)
+    .sort((left, right) => {
+      const dateLeft = left.record.lastVisitedOn || left.record.firstVisitedOn || '';
+      const dateRight = right.record.lastVisitedOn || right.record.firstVisitedOn || '';
+
+      if (dateLeft !== dateRight) {
+        return dateRight.localeCompare(dateLeft);
       }
 
       return left.name.localeCompare(right.name, 'ja');
     });
-
-  const noteStores = storesWithRecords.filter((store) => store.record.note).slice(0, 3);
 
   useEffect(() => {
     if (filteredStores.length === 0) {
@@ -125,12 +169,12 @@ export default function App() {
     {
       label: 'ランキング',
       value: rankedStores.length,
-      note: '順位メモあり'
+      note: '並び替えで管理'
     },
     {
-      label: '都府県',
-      value: prefectureCount,
-      note: '掲載エリア'
+      label: 'メモ',
+      value: noteStores.length,
+      note: `${prefectureCount} 都府県を掲載`
     }
   ];
 
@@ -160,86 +204,94 @@ export default function App() {
     });
   }
 
+  function handleRankingReorder(nextStoreIds) {
+    setRankingStoreIds(nextStoreIds);
+  }
+
   return (
     <>
       <main className="app-shell">
-        <header className="hero-card">
-          <div className="hero-card__stamp">Local Record</div>
+        {activeTab === 'map' && (
+          <>
+            <header className="hero-card">
+              <div className="hero-card__stamp">Home Screen Ready</div>
 
-          <div className="hero-grid">
-            <div className="hero-copy">
-              <p className="eyebrow">Map First Jiro Log</p>
-              <h1>二郎訪問ログ</h1>
-              <p className="hero-lead">
-                店舗の位置を地図で見比べながら、訪問済み・行きたい・個人ランキングを1つの画面で整理できます。
-                記録はこの端末だけに保存されます。
-              </p>
-            </div>
+              <div className="hero-grid">
+                <div className="hero-copy">
+                  <p className="eyebrow">Map First Jiro Log</p>
+                  <h1>二郎訪問ログ</h1>
+                  <p className="hero-lead">
+                    店舗の位置を地図で見比べながら、訪問済み・行きたい・ランキングを1つのアプリで整理できます。
+                    iPhoneのホーム画面に追加しても使いやすいよう、片手操作を前提に整えています。
+                  </p>
+                </div>
 
-            <div className="hero-aside">
-              <div className="hero-meter">
-                <p className="hero-meter__label">全体の達成率</p>
-                <div className="hero-meter__ring">
-                  <strong>{formatPercent(completionRate)}</strong>
-                  <span>
-                    {visitedCount} / {stores.length} 店舗
-                  </span>
+                <div className="hero-aside">
+                  <div className="hero-meter">
+                    <p className="hero-meter__label">全体の達成率</p>
+                    <div className="hero-meter__ring">
+                      <strong>{formatPercent(completionRate)}</strong>
+                      <span>
+                        {visitedCount} / {stores.length} 店舗
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="hero-note">
+                    <p className="hero-note__label">現在のフォーカス</p>
+                    {selectedStore ? (
+                      <>
+                        <strong>{selectedStore.name}</strong>
+                        <span>
+                          {selectedStore.prefecture} / {selectedStore.area}
+                        </span>
+                        <div className="hero-note__meta">
+                          <StatusPill status={selectedStore.record.status} />
+                          <small>{filteredStores.length} 店舗を表示中</small>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <strong>該当店舗なし</strong>
+                        <span>検索や絞り込み条件を調整してください</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="hero-note">
-                <p className="hero-note__label">現在のフォーカス</p>
-                {selectedStore ? (
-                  <>
-                    <strong>{selectedStore.name}</strong>
-                    <span>
-                      {selectedStore.prefecture} / {selectedStore.area}
-                    </span>
-                    <div className="hero-note__meta">
-                      <StatusPill status={selectedStore.record.status} />
-                      <small>{filteredStores.length} 店舗を表示中</small>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <strong>該当店舗なし</strong>
-                    <span>検索や絞り込み条件を調整してください</span>
-                  </>
-                )}
+              <div className="hero-strip" aria-label="概要サマリー">
+                {heroSummaryItems.map((item) => (
+                  <article key={item.label} className="summary-card summary-card--compact">
+                    <p>{item.label}</p>
+                    <strong>{item.value}</strong>
+                    <span>{item.note}</span>
+                  </article>
+                ))}
               </div>
-            </div>
-          </div>
+            </header>
 
-          <div className="hero-strip" aria-label="概要サマリー">
-            {heroSummaryItems.map((item) => (
-              <article key={item.label} className="summary-card summary-card--compact">
-                <p>{item.label}</p>
-                <strong>{item.value}</strong>
-                <span>{item.note}</span>
-              </article>
-            ))}
-          </div>
-        </header>
+            <MapPreview
+              stores={filteredStores}
+              totalStoreCount={storesWithRecords.length}
+              selectedStoreId={selectedStoreId}
+              selectedStore={selectedStore}
+              selectionSource={selectionSource}
+              onSelect={handleMapSelect}
+              onOpen={openEditor}
+            />
+          </>
+        )}
 
-        <div className="map-stack">
-          <MapPreview
-            stores={filteredStores}
-            totalStoreCount={storesWithRecords.length}
-            selectedStoreId={selectedStoreId}
-            selectedStore={selectedStore}
-            selectionSource={selectionSource}
-            onSelect={handleMapSelect}
-            onOpen={openEditor}
-          />
-
-          <section className="section-card store-section">
+        {activeTab === 'stores' && (
+          <section className="section-card tab-screen">
             <div className="section-heading store-section__heading">
               <div>
                 <p className="eyebrow">Store Ledger</p>
                 <h2>店舗一覧</h2>
               </div>
               <p className="section-copy">
-                地図で全体を見て、一覧で細かく記録する流れにしています。検索と絞り込みはスクロール中も追いかけます。
+                検索や絞り込みを使いながら、各店舗の訪問状態やメモを手早く更新できます。
               </p>
             </div>
 
@@ -280,46 +332,28 @@ export default function App() {
               <p className="empty-state">条件に合う店舗がまだありません。</p>
             )}
           </section>
-        </div>
+        )}
 
-        <section className="two-column record-columns">
-          <article className="section-card ledger-card">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">Ranking</p>
-                <h2>訪問済みランキング</h2>
-              </div>
-            </div>
+        {activeTab === 'ranking' && (
+          <RankingTab
+            stores={rankedStores}
+            visitedCount={visitedCount}
+            onOpen={openEditor}
+            onReorder={handleRankingReorder}
+            onNavigateStores={() => setActiveTab('stores')}
+          />
+        )}
 
-            {rankedStores.length > 0 ? (
-              <ol className="ranking-list">
-                {rankedStores.map((store) => (
-                  <li key={store.id}>
-                    <button type="button" onClick={() => openEditor(store.id)}>
-                      <span className="ranking-list__index">#{store.record.rank}</span>
-                      <span>
-                        <strong>{store.name}</strong>
-                        <small>
-                          {store.prefecture} / {store.area}
-                        </small>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="empty-state">
-                訪問済み店舗に順位を付けると、ここにランキングが出ます。
-              </p>
-            )}
-          </article>
-
-          <article className="section-card ledger-card">
+        {activeTab === 'notes' && (
+          <section className="section-card tab-screen ledger-card">
             <div className="section-heading">
               <div>
                 <p className="eyebrow">Notes</p>
-                <h2>最近のメモ</h2>
+                <h2>店舗メモ</h2>
               </div>
+              <p className="section-copy">
+                最近書いたメモをまとめて見返せます。気になった店舗はそのまま編集画面へ開けます。
+              </p>
             </div>
 
             {noteStores.length > 0 ? (
@@ -329,21 +363,26 @@ export default function App() {
                     key={store.id}
                     type="button"
                     className="note-card"
-                    onClick={() => openEditor(store.id)}
+                    onClick={() => openEditor(store.id, 'notes')}
                   >
-                    <strong>{store.name}</strong>
+                    <div className="note-card__top">
+                      <strong>{store.name}</strong>
+                      <StatusPill status={store.record.status} />
+                    </div>
                     <p>{store.record.note}</p>
                   </button>
                 ))}
               </div>
             ) : (
               <p className="empty-state">
-                店舗メモを書き始めると、ここにすぐ見返せる形で並びます。
+                店舗メモを書き始めると、ここにまとめて並びます。
               </p>
             )}
-          </article>
-        </section>
+          </section>
+        )}
       </main>
+
+      <BottomTabBar activeTab={activeTab} onChange={setActiveTab} />
 
       <RecordDrawer
         store={editingStore}

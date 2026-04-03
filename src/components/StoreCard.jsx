@@ -20,7 +20,9 @@ export function StoreCard({ store, onOpen }) {
     >
       <div className="store-card__headerline">
         <p className="store-card__prefecture">{store.prefecture}</p>
-        {record.rank && <span className="store-card__rank">Rank #{record.rank}</span>}
+        {store.rankingPosition && (
+          <span className="store-card__rank">Rank #{store.rankingPosition}</span>
+        )}
       </div>
 
       <div className="store-card__top">

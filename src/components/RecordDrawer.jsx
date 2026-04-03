@@ -102,28 +102,12 @@ export function RecordDrawer({ store, record, onClose, onSave, onReset }) {
             </label>
           </section>
 
-          <section className="field-grid">
-            <label className="field">
-              <span className="field-label">個人順位</span>
-              <input
-                inputMode="numeric"
-                min="1"
-                pattern="[0-9]*"
-                placeholder="例: 3"
-                value={draft.rank}
-                onChange={(event) =>
-                  setField('rank', event.target.value.replace(/[^\d]/g, ''))
-                }
-              />
-            </label>
-
-            <div className="field field--hint">
-              <span className="field-label">使い方メモ</span>
-              <p>
-                行った店舗だけ順位を付けても、行きたい店舗のメモ置き場として使っても大丈夫です。
-              </p>
-            </div>
-          </section>
+          <div className="field field--hint">
+            <span className="field-label">ランキングについて</span>
+            <p>
+              順位はランキング画面で並び替えて管理します。この画面では訪問状態とメモの記録に集中できます。
+            </p>
+          </div>
 
           <label className="field">
             <span className="field-label">メモ</span>
@@ -149,4 +133,3 @@ export function RecordDrawer({ store, record, onClose, onSave, onReset }) {
     </div>
   );
 }
-
