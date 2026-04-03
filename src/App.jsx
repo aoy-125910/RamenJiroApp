@@ -48,6 +48,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id ?? null);
   const [editingStoreId, setEditingStoreId] = useState(null);
+  const [selectionSource, setSelectionSource] = useState('initial');
 
   useEffect(() => {
     saveRecords(records);
@@ -87,16 +88,33 @@ export default function App() {
 
   const noteStores = storesWithRecords.filter((store) => store.record.note).slice(0, 3);
 
+  useEffect(() => {
+    if (filteredStores.length === 0) {
+      return;
+    }
+
+    const isSelectedVisible = filteredStores.some(
+      (store) => store.id === selectedStoreId
+    );
+
+    if (!isSelectedVisible) {
+      setSelectedStoreId(filteredStores[0].id);
+      setSelectionSource('filter');
+    }
+  }, [filteredStores, selectedStoreId]);
+
   const selectedStore =
-    storesWithRecords.find((store) => store.id === selectedStoreId) ?? storesWithRecords[0];
+    filteredStores.find((store) => store.id === selectedStoreId) ?? filteredStores[0] ?? null;
   const editingStore =
     storesWithRecords.find((store) => store.id === editingStoreId) ?? null;
 
   function handleMapSelect(storeId) {
+    setSelectionSource('map');
     setSelectedStoreId(storeId);
   }
 
-  function openEditor(storeId) {
+  function openEditor(storeId, source = 'list') {
+    setSelectionSource(source);
     setSelectedStoreId(storeId);
     setEditingStoreId(storeId);
   }
@@ -164,9 +182,11 @@ export default function App() {
         </section>
 
         <MapPreview
-          stores={storesWithRecords}
+          stores={filteredStores}
+          totalStoreCount={storesWithRecords.length}
           selectedStoreId={selectedStoreId}
           selectedStore={selectedStore}
+          selectionSource={selectionSource}
           onSelect={handleMapSelect}
           onOpen={openEditor}
         />

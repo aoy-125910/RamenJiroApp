@@ -433,6 +433,50 @@ textarea:focus-visible {
   background: rgba(255, 248, 239, 0.96);
 }
 
+.map-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.map-toolbar p {
+  margin: 0;
+  color: var(--subtle);
+  line-height: 1.5;
+}
+
+.map-toolbar__button {
+  flex-shrink: 0;
+}
+
+.map-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 251, 246, 0.9), transparent 55%),
+    linear-gradient(180deg, rgba(255, 248, 239, 0.96), rgba(245, 226, 197, 0.92));
+  z-index: 500;
+}
+
+.map-empty-state strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.map-empty-state p {
+  margin: 0;
+  color: var(--subtle);
+  line-height: 1.6;
+}
+
 .map-popup {
   min-width: 120px;
   color: var(--ink);
@@ -454,6 +498,39 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+.map-cluster-shell {
+  background: transparent;
+  border: 0;
+}
+
+.map-cluster {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  color: #7b210f;
+  font-size: 0.95rem;
+  font-weight: 800;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 252, 247, 0.98), rgba(255, 219, 172, 0.96) 58%),
+    linear-gradient(135deg, rgba(198, 83, 45, 0.92), rgba(157, 45, 16, 0.95));
+  box-shadow: 0 16px 28px rgba(47, 26, 15, 0.22);
+}
+
+.map-cluster.is-medium {
+  width: 52px;
+  height: 52px;
+  font-size: 1rem;
+}
+
+.map-cluster.is-large {
+  width: 58px;
+  height: 58px;
+  font-size: 1.08rem;
+}
+
 .map-marker-shell {
   background: transparent;
   border: 0;
@@ -462,40 +539,96 @@ textarea:focus-visible {
 .map-marker-icon {
   position: relative;
   display: block;
-  width: 22px;
-  height: 22px;
-  border-radius: 50% 50% 50% 0;
-  border: 2px solid rgba(255, 255, 255, 0.96);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 251, 246, 0.98);
   box-shadow: 0 10px 20px rgba(47, 26, 15, 0.22);
-  transform: rotate(-45deg);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
 }
 
+.map-marker-icon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 13px;
+  height: 13px;
+  background: rgba(255, 251, 246, 0.98);
+  transform: translateX(-50%) rotate(45deg);
+}
+
 .map-marker-icon::after {
   content: "";
   position: absolute;
-  inset: 4px;
+  inset: -7px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid transparent;
+  transform: scale(0.85);
+  opacity: 0;
+}
+
+.map-marker-icon__shape {
+  position: absolute;
+  inset: 7px;
+  z-index: 1;
 }
 
 .map-marker-icon.is-not_visited {
-  background: #786250;
+  color: #6f5948;
+  border: 2px solid #6f5948;
+}
+
+.map-marker-icon__shape.is-not_visited {
+  border: 2px solid #6f5948;
+  border-radius: 50%;
+  background: transparent;
 }
 
 .map-marker-icon.is-wishlist {
+  color: var(--olive);
+  border: 2px solid var(--olive);
+}
+
+.map-marker-icon__shape.is-wishlist {
+  inset: 6px;
   background: var(--olive);
+  clip-path: polygon(
+    50% 0%,
+    61% 34%,
+    98% 35%,
+    68% 57%,
+    79% 92%,
+    50% 71%,
+    21% 92%,
+    32% 57%,
+    2% 35%,
+    39% 34%
+  );
 }
 
 .map-marker-icon.is-visited {
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.map-marker-icon__shape.is-visited {
+  inset: 6px;
+  border-radius: 50%;
   background: var(--accent);
 }
 
 .map-marker-icon.is-active {
-  transform: rotate(-45deg) scale(1.14);
+  transform: scale(1.16);
   box-shadow: 0 12px 24px rgba(47, 26, 15, 0.28);
+}
+
+.map-marker-icon.is-active::after {
+  border-color: rgba(198, 83, 45, 0.36);
+  opacity: 1;
+  animation: map-marker-pulse 1.7s ease-out infinite;
 }
 
 .map-detail {
@@ -521,6 +654,11 @@ textarea:focus-visible {
 
 .map-detail__button {
   min-width: 136px;
+}
+
+.map-frame .leaflet-marker-pane,
+.map-frame .leaflet-popup-pane {
+  z-index: 550;
 }
 
 .ranking-list,
@@ -731,5 +869,22 @@ textarea:focus-visible {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes map-marker-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.75;
+  }
+
+  70% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.32);
+    opacity: 0;
   }
 }
