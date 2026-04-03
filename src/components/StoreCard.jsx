@@ -8,19 +8,23 @@ export function StoreCard({ store, onOpen }) {
         ? `最終訪問 ${record.lastVisitedOn}`
         : '訪問記録あり'
       : record.status === 'wishlist'
-        ? '次に狙っている店舗'
+        ? '気になる店舗として保存中'
         : 'まだ記録なし';
 
   return (
     <button
       type="button"
-      className="store-card"
+      className={`store-card is-${record.status}`}
       onClick={() => onOpen(store.id)}
       aria-label={`${store.name} の記録を開く`}
     >
+      <div className="store-card__headerline">
+        <p className="store-card__prefecture">{store.prefecture}</p>
+        {record.rank && <span className="store-card__rank">Rank #{record.rank}</span>}
+      </div>
+
       <div className="store-card__top">
         <div>
-          <p className="store-card__prefecture">{store.prefecture}</p>
           <h3>{store.name}</h3>
           <p className="store-card__area">{store.area}</p>
         </div>
@@ -29,11 +33,16 @@ export function StoreCard({ store, onOpen }) {
 
       <div className="store-card__meta">
         <span>{summaryText}</span>
-        {record.rank && <span>個人順位 #{record.rank}</span>}
+        {record.firstVisitedOn && record.status === 'visited' && (
+          <span>初訪問 {record.firstVisitedOn}</span>
+        )}
       </div>
 
       {record.note && <p className="store-card__note">{record.note}</p>}
+
+      <div className="store-card__footer">
+        <span className="store-card__cta">記録をひらく</span>
+      </div>
     </button>
   );
 }
-

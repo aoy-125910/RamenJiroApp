@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MapPreview } from './components/MapPreview';
 import { RecordDrawer } from './components/RecordDrawer';
+import { StatusPill } from './components/StatusPill';
 import { StoreCard } from './components/StoreCard';
 import { stores } from './data/stores';
 import {
@@ -68,6 +69,9 @@ export default function App() {
   const wishlistCount = storesWithRecords.filter(
     (store) => store.record.status === 'wishlist'
   ).length;
+  const prefectureCount = new Set(
+    storesWithRecords.map((store) => store.prefecture)
+  ).size;
   const completionRate = stores.length === 0 ? 0 : (visitedCount / stores.length) * 100;
 
   const filteredStores = storesWithRecords.filter(
@@ -107,6 +111,28 @@ export default function App() {
     filteredStores.find((store) => store.id === selectedStoreId) ?? filteredStores[0] ?? null;
   const editingStore =
     storesWithRecords.find((store) => store.id === editingStoreId) ?? null;
+  const heroSummaryItems = [
+    {
+      label: '訪問済み',
+      value: visitedCount,
+      note: `達成率 ${formatPercent(completionRate)}`
+    },
+    {
+      label: '行きたい',
+      value: wishlistCount,
+      note: wishlistCount > 0 ? '気になる店舗を保存中' : 'あとで追加できます'
+    },
+    {
+      label: 'ランキング',
+      value: rankedStores.length,
+      note: '順位メモあり'
+    },
+    {
+      label: '都府県',
+      value: prefectureCount,
+      note: '掲載エリア'
+    }
+  ];
 
   function handleMapSelect(storeId) {
     setSelectionSource('map');
@@ -138,110 +164,126 @@ export default function App() {
     <>
       <main className="app-shell">
         <header className="hero-card">
-          <div className="hero-copy">
-            <p className="eyebrow">Mobile First Jiro Tracker</p>
-            <h1>二郎訪問ログ</h1>
-            <p className="hero-lead">
-              ラーメン二郎の店舗一覧と、自分の訪問履歴をスマホで手早く整理するための雛形です。
-              記録はこの端末だけに保存されます。
-            </p>
+          <div className="hero-card__stamp">Local Record</div>
+
+          <div className="hero-grid">
+            <div className="hero-copy">
+              <p className="eyebrow">Map First Jiro Log</p>
+              <h1>二郎訪問ログ</h1>
+              <p className="hero-lead">
+                店舗の位置を地図で見比べながら、訪問済み・行きたい・個人ランキングを1つの画面で整理できます。
+                記録はこの端末だけに保存されます。
+              </p>
+            </div>
+
+            <div className="hero-aside">
+              <div className="hero-meter">
+                <p className="hero-meter__label">全体の達成率</p>
+                <div className="hero-meter__ring">
+                  <strong>{formatPercent(completionRate)}</strong>
+                  <span>
+                    {visitedCount} / {stores.length} 店舗
+                  </span>
+                </div>
+              </div>
+
+              <div className="hero-note">
+                <p className="hero-note__label">現在のフォーカス</p>
+                {selectedStore ? (
+                  <>
+                    <strong>{selectedStore.name}</strong>
+                    <span>
+                      {selectedStore.prefecture} / {selectedStore.area}
+                    </span>
+                    <div className="hero-note__meta">
+                      <StatusPill status={selectedStore.record.status} />
+                      <small>{filteredStores.length} 店舗を表示中</small>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <strong>該当店舗なし</strong>
+                    <span>検索や絞り込み条件を調整してください</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="hero-meter">
-            <p className="hero-meter__label">全体の達成率</p>
-            <div className="hero-meter__ring">
-              <strong>{formatPercent(completionRate)}</strong>
-              <span>
-                {visitedCount} / {stores.length} 店舗
-              </span>
-            </div>
+          <div className="hero-strip" aria-label="概要サマリー">
+            {heroSummaryItems.map((item) => (
+              <article key={item.label} className="summary-card summary-card--compact">
+                <p>{item.label}</p>
+                <strong>{item.value}</strong>
+                <span>{item.note}</span>
+              </article>
+            ))}
           </div>
         </header>
 
-        <section className="summary-grid">
-          <article className="summary-card">
-            <p>登録店舗</p>
-            <strong>{stores.length}</strong>
-            <span>今は雛形用の初期セット</span>
-          </article>
-          <article className="summary-card">
-            <p>訪問済み</p>
-            <strong>{visitedCount}</strong>
-            <span>達成率を自動計算</span>
-          </article>
-          <article className="summary-card">
-            <p>行きたい</p>
-            <strong>{wishlistCount}</strong>
-            <span>気になる店舗を整理</span>
-          </article>
-          <article className="summary-card">
-            <p>ランキング</p>
-            <strong>{rankedStores.length}</strong>
-            <span>個人順位付きの店舗</span>
-          </article>
-        </section>
+        <div className="map-stack">
+          <MapPreview
+            stores={filteredStores}
+            totalStoreCount={storesWithRecords.length}
+            selectedStoreId={selectedStoreId}
+            selectedStore={selectedStore}
+            selectionSource={selectionSource}
+            onSelect={handleMapSelect}
+            onOpen={openEditor}
+          />
 
-        <MapPreview
-          stores={filteredStores}
-          totalStoreCount={storesWithRecords.length}
-          selectedStoreId={selectedStoreId}
-          selectedStore={selectedStore}
-          selectionSource={selectionSource}
-          onSelect={handleMapSelect}
-          onOpen={openEditor}
-        />
-
-        <section className="section-card">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Stores</p>
-              <h2>店舗一覧</h2>
+          <section className="section-card store-section">
+            <div className="section-heading store-section__heading">
+              <div>
+                <p className="eyebrow">Store Ledger</p>
+                <h2>店舗一覧</h2>
+              </div>
+              <p className="section-copy">
+                地図で全体を見て、一覧で細かく記録する流れにしています。検索と絞り込みはスクロール中も追いかけます。
+              </p>
             </div>
-            <p className="section-copy">
-              ステータス別に絞り込みつつ、気になる店舗をタップして記録できます。
-            </p>
-          </div>
 
-          <div className="toolbar">
-            <label className="search-field">
-              <span className="visually-hidden">店舗検索</span>
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="店舗名、都道府県、エリアで検索"
-              />
-            </label>
+            <div className="toolbar">
+              <label className="search-field">
+                <span className="visually-hidden">店舗検索</span>
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="店舗名、都道府県、エリアで検索"
+                />
+              </label>
 
-            <div className="filter-row">
-              {filterOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={`filter-chip ${
-                    statusFilter === option.id ? 'is-selected' : ''
-                  }`}
-                  onClick={() => setStatusFilter(option.id)}
-                >
-                  {option.label}
-                </button>
+              <div className="filter-row">
+                {filterOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`filter-chip ${
+                      statusFilter === option.id ? 'is-selected' : ''
+                    }`}
+                    onClick={() => setStatusFilter(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="store-grid">
+              {filteredStores.map((store) => (
+                <StoreCard key={store.id} store={store} onOpen={openEditor} />
               ))}
             </div>
-          </div>
 
-          <div className="store-grid">
-            {filteredStores.map((store) => (
-              <StoreCard key={store.id} store={store} onOpen={openEditor} />
-            ))}
-          </div>
+            {filteredStores.length === 0 && (
+              <p className="empty-state">条件に合う店舗がまだありません。</p>
+            )}
+          </section>
+        </div>
 
-          {filteredStores.length === 0 && (
-            <p className="empty-state">条件に合う店舗がまだありません。</p>
-          )}
-        </section>
-
-        <section className="two-column">
-          <article className="section-card">
+        <section className="two-column record-columns">
+          <article className="section-card ledger-card">
             <div className="section-heading">
               <div>
                 <p className="eyebrow">Ranking</p>
@@ -272,7 +314,7 @@ export default function App() {
             )}
           </article>
 
-          <article className="section-card">
+          <article className="section-card ledger-card">
             <div className="section-heading">
               <div>
                 <p className="eyebrow">Notes</p>
