@@ -140,7 +140,7 @@ export default function App() {
         <header className="hero-card">
           <div className="hero-copy">
             <p className="eyebrow">Mobile First Jiro Tracker</p>
-            <h1>二郎遠征ノート</h1>
+            <h1>二郎訪問ログ</h1>
             <p className="hero-lead">
               ラーメン二郎の店舗一覧と、自分の訪問履歴をスマホで手早く整理するための雛形です。
               記録はこの端末だけに保存されます。
@@ -172,7 +172,7 @@ export default function App() {
           <article className="summary-card">
             <p>行きたい</p>
             <strong>{wishlistCount}</strong>
-            <span>次の遠征候補を整理</span>
+            <span>気になる店舗を整理</span>
           </article>
           <article className="summary-card">
             <p>ランキング</p>

@@ -1,6 +1,6 @@
 {
-  "name": "二郎遠征ノート",
-  "short_name": "二郎遠征",
+  "name": "二郎訪問ログ",
+  "short_name": "二郎訪問",
   "description": "ラーメン二郎の訪問記録と行きたい店舗をスマホで管理するアプリ",
   "start_url": "/",
   "display": "standalone",
@@ -14,4 +14,3 @@
     }
   ]
 }
-
