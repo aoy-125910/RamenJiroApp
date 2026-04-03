@@ -1,0 +1,17 @@
+{
+  "name": "二郎遠征ノート",
+  "short_name": "二郎遠征",
+  "description": "ラーメン二郎の訪問記録と行きたい店舗をスマホで管理するアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6e8d7",
+  "theme_color": "#c6532d",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+
