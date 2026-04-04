@@ -1336,7 +1336,7 @@ textarea:focus-visible {
 
 .ranking-board__item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 14px;
   align-items: start;
   padding: 16px;
@@ -1387,31 +1387,53 @@ textarea:focus-visible {
 }
 
 .ranking-board__body {
+  display: grid;
+  gap: 10px;
   min-width: 0;
 }
 
-.ranking-board__title {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+.ranking-board__headline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
   align-items: start;
+}
+
+.ranking-board__title {
+  min-width: 0;
 }
 
 .ranking-board__body strong {
   display: block;
   font-family: var(--heading-font);
-  font-size: 1.1rem;
+  font-size: 1.16rem;
   color: var(--ink);
+  line-height: 1.24;
+  text-wrap: balance;
 }
 
-.ranking-board__body p,
+.ranking-board__title p,
 .ranking-board__body small,
 .ranking-board__body em {
   display: block;
-  margin: 0.3rem 0 0;
+  margin: 0;
   color: var(--subtle);
   line-height: 1.55;
   font-size: 0.86rem;
+}
+
+.ranking-board__title p {
+  margin-top: 0.28rem;
+}
+
+.ranking-board__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.ranking-board__meta small:first-child {
+  color: var(--accent);
 }
 
 .ranking-board__body em {
@@ -1423,16 +1445,18 @@ textarea:focus-visible {
 }
 
 .ranking-board__actions {
-  display: grid;
-  gap: 10px;
-  justify-items: end;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .ranking-board__edit {
-  min-width: 80px;
+  min-width: 88px;
 }
 
 .ranking-board__handle {
+  margin-left: auto;
   min-width: 44px;
   min-height: 44px;
   display: grid;
@@ -1463,6 +1487,16 @@ textarea:focus-visible {
 
 .ranking-board__empty-button {
   width: 100%;
+}
+
+@media (max-width: 420px) {
+  .ranking-board__headline {
+    grid-template-columns: 1fr;
+  }
+
+  .ranking-board__headline .status-pill {
+    justify-self: start;
+  }
 }
 
 .visually-hidden {

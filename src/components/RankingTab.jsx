@@ -45,39 +45,43 @@ function RankingCard({
       </div>
 
       <div className="ranking-board__body">
-        <div className="ranking-board__title">
-          <strong>{store.name}</strong>
+        <div className="ranking-board__headline">
+          <div className="ranking-board__title">
+            <strong>{store.name}</strong>
+            <p>
+              {store.prefecture} / {store.area}
+            </p>
+          </div>
           <StatusPill status={store.record.status} />
         </div>
-        <p>
-          {store.prefecture} / {store.area}
-        </p>
-        {store.storeStatus === 'closed' && (
-          <small>{store.statusNote ?? '閉店済みの履歴店'}</small>
-        )}
-        <small>最終記録 {visitDate}</small>
+        <div className="ranking-board__meta">
+          {store.storeStatus === 'closed' && (
+            <small>{store.statusNote ?? '閉店済みの履歴店'}</small>
+          )}
+          <small>最終記録 {visitDate}</small>
+        </div>
         {store.record.note && <em>{store.record.note}</em>}
-      </div>
 
-      <div className="ranking-board__actions">
-        {!isOverlay && (
+        <div className="ranking-board__actions">
+          {!isOverlay && (
+            <button
+              type="button"
+              className="ghost-button ranking-board__edit"
+              onClick={() => onOpen(store.id, 'ranking')}
+            >
+              編集
+            </button>
+          )}
           <button
             type="button"
-            className="ghost-button ranking-board__edit"
-            onClick={() => onOpen(store.id, 'ranking')}
+            className="ranking-board__handle"
+            aria-label={`${store.name} を並び替える`}
+            {...attributes}
+            {...listeners}
           >
-            編集
+            ≡
           </button>
-        )}
-        <button
-          type="button"
-          className="ranking-board__handle"
-          aria-label={`${store.name} を並び替える`}
-          {...attributes}
-          {...listeners}
-        >
-          ≡
-        </button>
+        </div>
       </div>
     </article>
   );

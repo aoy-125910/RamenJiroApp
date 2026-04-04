@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>二郎訪問ログ アイコン試作</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d0b08;
+        --panel: rgba(22, 19, 14, 0.96);
+        --line: rgba(255, 255, 255, 0.08);
+        --ink: #fff7d6;
+        --subtle: #afa38e;
+        --accent: #f5c800;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top right, rgba(245, 200, 0, 0.14), transparent 32%),
+          linear-gradient(180deg, #15120d 0%, var(--bg) 100%);
+        color: var(--ink);
+        font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      }
+
+      main {
+        width: min(100%, 1100px);
+        margin: 0 auto;
+        display: grid;
+        gap: 18px;
+      }
+
+      .panel {
+        padding: 20px;
+        border-radius: 20px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        display: grid;
+        gap: 10px;
+      }
+
+      .hero p:last-child {
+        color: var(--subtle);
+        line-height: 1.7;
+      }
+
+      .preview-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .icon-compare {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .icon-card {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--line);
+      }
+
+      .icon-card__stage {
+        display: grid;
+        place-items: center;
+        min-height: 200px;
+        border-radius: 16px;
+        background:
+          radial-gradient(circle at top, rgba(245, 200, 0, 0.08), transparent 54%),
+          #090806;
+      }
+
+      .icon-card__stage.light {
+        background:
+          radial-gradient(circle at top, rgba(245, 200, 0, 0.12), transparent 54%),
+          #f4ead3;
+      }
+
+      .icon-card__stage img {
+        width: 140px;
+        height: 140px;
+      }
+
+      .icon-sizes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: end;
+      }
+
+      .icon-size {
+        display: grid;
+        gap: 8px;
+        justify-items: center;
+        color: var(--subtle);
+        font-size: 0.82rem;
+      }
+
+      .icon-size img {
+        border-radius: 22%;
+      }
+
+      .home-screen {
+        display: grid;
+        gap: 16px;
+      }
+
+      .phone {
+        width: min(100%, 320px);
+        margin: 0 auto;
+        padding: 18px 14px 24px;
+        border-radius: 34px;
+        background: linear-gradient(180deg, #1b1812 0%, #0b0906 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      }
+
+      .phone__notch {
+        width: 120px;
+        height: 20px;
+        margin: 0 auto 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .phone__grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px 14px;
+      }
+
+      .app-icon {
+        display: grid;
+        gap: 6px;
+        justify-items: center;
+      }
+
+      .app-icon img {
+        width: 58px;
+        height: 58px;
+        border-radius: 22%;
+      }
+
+      .app-icon span {
+        font-size: 0.72rem;
+        color: #e8ddc3;
+      }
+
+      @media (min-width: 860px) {
+        .preview-grid {
+          grid-template-columns: 1.2fr 0.8fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel hero">
+        <p class="eyebrow">Prototype</p>
+        <h1>二郎訪問ログ アイコン試作</h1>
+        <p>
+          現在の黒×黄テーマに合わせて、ホーム画面でも潰れにくい太い線でまとめた案です。
+          ボウルと「二」を重ねる方向で、情報量を絞っています。
+        </p>
+      </section>
+
+      <div class="preview-grid">
+        <section class="panel">
+          <div class="icon-compare">
+            <article class="icon-card">
+              <p class="eyebrow">Current</p>
+              <div class="icon-card__stage light">
+                <img src="./icon.svg" alt="現在のPWAアイコン" />
+              </div>
+            </article>
+
+            <article class="icon-card">
+              <p class="eyebrow">Prototype</p>
+              <div class="icon-card__stage">
+                <img src="./icon-prototype.svg" alt="試作PWAアイコン" />
+              </div>
+            </article>
+          </div>
+
+          <article class="icon-card" style="margin-top: 18px;">
+            <p class="eyebrow">Sizes</p>
+            <div class="icon-sizes">
+              <div class="icon-size">
+                <img src="./icon-prototype.svg" alt="" width="120" height="120" />
+                <span>120px</span>
+              </div>
+              <div class="icon-size">
+                <img src="./icon-prototype.svg" alt="" width="76" height="76" />
+                <span>76px</span>
+              </div>
+              <div class="icon-size">
+                <img src="./icon-prototype.svg" alt="" width="48" height="48" />
+                <span>48px</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel home-screen">
+          <p class="eyebrow">Home Screen</p>
+          <div class="phone">
+            <div class="phone__notch"></div>
+            <div class="phone__grid">
+              <div class="app-icon">
+                <img src="./icon-prototype.svg" alt="" />
+                <span>二郎訪問</span>
+              </div>
+              <div class="app-icon">
+                <img src="./icon.svg" alt="" />
+                <span>現行</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
