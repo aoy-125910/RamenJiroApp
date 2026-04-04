@@ -1,11 +1,12 @@
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { BottomTabBar } from './components/BottomTabBar';
 import { MapPreview } from './components/MapPreview';
 import { RankingTab } from './components/RankingTab';
 import { RecordDrawer } from './components/RecordDrawer';
 import { StatusPill } from './components/StatusPill';
 import { StoreCard } from './components/StoreCard';
-import { stores } from './data/stores';
+import { storeDataMeta, stores } from './data/stores';
+import { createBackupPayload, parseBackupText } from './lib/backup';
 import {
   createEmptyRecord,
   loadRanking,
@@ -37,7 +38,7 @@ function includesQuery(query, store) {
 
   const normalized = query.toLowerCase();
 
-  return [store.name, store.prefecture, store.area]
+  return [store.name, store.prefecture, store.area, store.address ?? '']
     .join(' ')
     .toLowerCase()
     .includes(normalized);
@@ -45,6 +46,10 @@ function includesQuery(query, store) {
 
 function formatPercent(value) {
   return `${Math.round(value)}%`;
+}
+
+function formatDateLabel(value) {
+  return value ? String(value).slice(0, 10) : '';
 }
 
 function areSameOrder(left, right) {
@@ -65,6 +70,9 @@ export default function App() {
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id ?? null);
   const [editingStoreId, setEditingStoreId] = useState(null);
   const [selectionSource, setSelectionSource] = useState('initial');
+  const [backupFeedback, setBackupFeedback] = useState(null);
+  const importInputRef = useRef(null);
+  const validStoreIds = new Set(stores.map((store) => store.id));
 
   useEffect(() => {
     saveRecords(records);
@@ -88,11 +96,17 @@ export default function App() {
   }));
 
   const storeMap = new Map(storesWithRecords.map((store) => [store.id, store]));
+  const activeStores = storesWithRecords.filter(
+    (store) => store.storeStatus !== 'closed'
+  );
   const visitedStoreIds = storesWithRecords
     .filter((store) => store.record.status === 'visited')
     .map((store) => store.id);
 
   const visitedCount = storesWithRecords.filter(
+    (store) => store.record.status === 'visited'
+  ).length;
+  const visitedActiveCount = activeStores.filter(
     (store) => store.record.status === 'visited'
   ).length;
   const wishlistCount = storesWithRecords.filter(
@@ -101,7 +115,10 @@ export default function App() {
   const prefectureCount = new Set(
     storesWithRecords.map((store) => store.prefecture)
   ).size;
-  const completionRate = stores.length === 0 ? 0 : (visitedCount / stores.length) * 100;
+  const activeStoreCount = activeStores.length;
+  const archivedStoreCount = storesWithRecords.length - activeStoreCount;
+  const completionRate =
+    activeStoreCount === 0 ? 0 : (visitedActiveCount / activeStoreCount) * 100;
 
   useEffect(() => {
     setRankingStoreIds((current) => {
@@ -159,7 +176,7 @@ export default function App() {
     {
       label: '訪問済み',
       value: visitedCount,
-      note: `達成率 ${formatPercent(completionRate)}`
+      note: `現行店達成率 ${formatPercent(completionRate)}`
     },
     {
       label: '行きたい',
@@ -174,7 +191,7 @@ export default function App() {
     {
       label: 'メモ',
       value: noteStores.length,
-      note: `${prefectureCount} 都府県を掲載`
+      note: `現行${activeStoreCount}店 / 履歴${archivedStoreCount}店`
     }
   ];
 
@@ -208,13 +225,120 @@ export default function App() {
     setRankingStoreIds(nextStoreIds);
   }
 
+  async function handleExportBackup() {
+    try {
+      const payload = createBackupPayload({
+        records,
+        rankingStoreIds,
+        storeDataMeta
+      });
+      const serialized = JSON.stringify(payload, null, 2);
+      const filename = `jiro-log-backup-${formatDateLabel(
+        new Date().toISOString()
+      )}.json`;
+      const blob = new Blob([serialized], {
+        type: 'application/json'
+      });
+
+      if (
+        typeof File !== 'undefined' &&
+        typeof navigator !== 'undefined'
+      ) {
+        const file = new File([blob], filename, {
+          type: 'application/json'
+        });
+
+        if (navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: '二郎訪問ログのバックアップ',
+              files: [file]
+            });
+            setBackupFeedback({
+              tone: 'success',
+              message:
+                '共有シートを開きました。ファイルアプリなどに保存しておくと安心です。'
+            });
+            return;
+          } catch (error) {
+            if (error?.name === 'AbortError') {
+              return;
+            }
+          }
+        }
+      }
+
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      link.click();
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
+
+      setBackupFeedback({
+        tone: 'success',
+        message: 'JSONバックアップを保存しました。'
+      });
+    } catch {
+      setBackupFeedback({
+        tone: 'error',
+        message: 'バックアップの書き出しに失敗しました。'
+      });
+    }
+  }
+
+  function openImportPicker() {
+    importInputRef.current?.click();
+  }
+
+  async function handleImportBackup(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const nextData = parseBackupText(text, validStoreIds);
+      const nextVisitedCount = Object.values(nextData.records).filter(
+        (record) => record.status === 'visited'
+      ).length;
+      const shouldReplace = window.confirm(
+        `${file.name} の内容で現在の記録を置き換えますか？`
+      );
+
+      if (!shouldReplace) {
+        return;
+      }
+
+      setRecords(nextData.records);
+      setRankingStoreIds(nextData.rankingStoreIds);
+      setBackupFeedback({
+        tone: 'success',
+        message: `${file.name} を読み込みました。訪問済み ${nextVisitedCount} 店舗です。`
+      });
+    } catch (error) {
+      setBackupFeedback({
+        tone: 'error',
+        message: error?.message ?? 'バックアップの読み込みに失敗しました。'
+      });
+    } finally {
+      event.target.value = '';
+    }
+  }
+
   return (
     <>
       <main className="app-shell">
         {activeTab === 'map' && (
           <>
             <header className="hero-card">
-              <div className="hero-card__stamp">Home Screen Ready</div>
+              <div className="hero-card__stamp">
+                Current {activeStoreCount} Stores
+              </div>
 
               <div className="hero-grid">
                 <div className="hero-copy">
@@ -223,6 +347,7 @@ export default function App() {
                   <p className="hero-lead">
                     店舗の位置を地図で見比べながら、訪問済み・行きたい・ランキングを1つのアプリで整理できます。
                     iPhoneのホーム画面に追加しても使いやすいよう、片手操作を前提に整えています。
+                    現在は現行45店舗を基準にしつつ、履歴店も一緒に記録できます。
                   </p>
                 </div>
 
@@ -232,7 +357,7 @@ export default function App() {
                     <div className="hero-meter__ring">
                       <strong>{formatPercent(completionRate)}</strong>
                       <span>
-                        {visitedCount} / {stores.length} 店舗
+                        {visitedActiveCount} / {activeStoreCount} 現行店舗
                       </span>
                     </div>
                   </div>
@@ -247,8 +372,15 @@ export default function App() {
                         </span>
                         <div className="hero-note__meta">
                           <StatusPill status={selectedStore.record.status} />
-                          <small>{filteredStores.length} 店舗を表示中</small>
+                          <small>
+                            {filteredStores.length} 店舗を表示中 / 更新 {storeDataMeta.verifiedOn}
+                          </small>
                         </div>
+                        {selectedStore.storeStatus === 'closed' && (
+                          <p className="hero-note__store-status">
+                            {selectedStore.statusNote ?? '閉店済みの履歴店です。'}
+                          </p>
+                        )}
                       </>
                     ) : (
                       <>
@@ -356,6 +488,58 @@ export default function App() {
               </p>
             </div>
 
+            <section className="utility-card backup-card">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Backup</p>
+                  <h3>バックアップ</h3>
+                </div>
+                <p className="section-copy">
+                  JSONで記録を書き出し・読み込みできます。iPhoneでは共有シート優先、非対応環境では通常ダウンロードに切り替わります。
+                </p>
+              </div>
+
+              <div className="backup-card__meta">
+                <p>現行 {activeStoreCount} 店 / 履歴 {archivedStoreCount} 店</p>
+                <p>店舗データ確認日 {storeDataMeta.verifiedOn}</p>
+                <p>{prefectureCount} 都道府県を掲載</p>
+              </div>
+
+              <div className="backup-card__actions">
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={handleExportBackup}
+                >
+                  JSONを保存
+                </button>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={openImportPicker}
+                >
+                  JSONを読み込む
+                </button>
+              </div>
+
+              {backupFeedback && (
+                <p
+                  className={`backup-card__feedback is-${backupFeedback.tone}`}
+                  aria-live="polite"
+                >
+                  {backupFeedback.message}
+                </p>
+              )}
+
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="visually-hidden"
+                onChange={handleImportBackup}
+              />
+            </section>
+
             {noteStores.length > 0 ? (
               <div className="note-list">
                 {noteStores.map((store) => (
@@ -369,6 +553,11 @@ export default function App() {
                       <strong>{store.name}</strong>
                       <StatusPill status={store.record.status} />
                     </div>
+                    {store.storeStatus === 'closed' && (
+                      <span className="store-state-badge is-closed">
+                        {store.statusNote ?? '閉店済み'}
+                      </span>
+                    )}
                     <p>{store.record.note}</p>
                   </button>
                 ))}

@@ -13,11 +13,13 @@ const INITIAL_FIT_MAX_ZOOM = 7;
 const LIST_SELECTION_ZOOM = 13;
 const SINGLE_STORE_ZOOM = 11;
 
-function createMarkerIcon(status, isActive) {
+function createMarkerIcon(status, isActive, storeStatus) {
   return L.divIcon({
     className: 'map-marker-shell',
     html: `
-      <span class="map-marker-icon is-${status} ${isActive ? 'is-active' : ''}">
+      <span class="map-marker-icon is-${status} ${
+        storeStatus === 'closed' ? 'is-store-closed' : ''
+      } ${isActive ? 'is-active' : ''}">
         <span class="map-marker-icon__shape is-${status}"></span>
       </span>
     `,
@@ -56,6 +58,13 @@ function createPopupContent(store) {
   status.textContent = statusLabels[store.record.status] ?? statusLabels.not_visited;
 
   wrapper.append(title, area, status);
+
+  if (store.storeStatus === 'closed') {
+    const storeState = document.createElement('p');
+    storeState.className = 'map-popup__store-state';
+    storeState.textContent = store.statusNote ?? '閉店済みの履歴店';
+    wrapper.append(storeState);
+  }
 
   return wrapper;
 }
@@ -169,7 +178,11 @@ export function MapPreview({
 
     stores.forEach((store) => {
       const marker = L.marker([store.lat, store.lng], {
-        icon: createMarkerIcon(store.record.status, store.id === selectedStoreId),
+        icon: createMarkerIcon(
+          store.record.status,
+          store.id === selectedStoreId,
+          store.storeStatus
+        ),
         keyboard: true,
         riseOnHover: true,
         title: store.name
@@ -303,8 +316,16 @@ export function MapPreview({
             <p>
               {selectedStore.prefecture} / {selectedStore.area}
             </p>
+            {selectedStore.storeStatus === 'closed' && (
+              <p className="map-detail__store-state">
+                {selectedStore.statusNote ?? '閉店済みの履歴店です。'}
+              </p>
+            )}
           </div>
           <div className="map-detail__actions">
+            {selectedStore.storeStatus === 'closed' && (
+              <span className="store-state-badge is-closed">閉店</span>
+            )}
             <StatusPill status={selectedStore.record.status} />
             <button
               type="button"

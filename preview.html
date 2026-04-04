@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>デザインプレビュー — ラーメン二郎訪問ログ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Zen+Old+Mincho:wght@400;700;900&family=Shippori+Mincho+B1:wght@400;600;700&family=Kaisei+Decol:wght@400;700&family=DotGothic16&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PAGE SHELL
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #111;
+      color: #eee;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+      padding: 20px 24px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .page-header h1 {
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #777;
+      margin-bottom: 16px;
+    }
+
+    .tab-switcher {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tab-switcher::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 10px 20px 12px;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: #666;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color 150ms, border-color 150ms;
+      white-space: nowrap;
+    }
+    .tab-btn.is-active { color: #fff; border-bottom-color: #fff; }
+    .tab-btn[data-tab="a"].is-active { color: #f5c800; border-bottom-color: #f5c800; }
+    .tab-btn[data-tab="b"].is-active { color: #c0392b; border-bottom-color: #c0392b; }
+    .tab-btn[data-tab="c"].is-active { color: #ffe100; border-bottom-color: #ffe100; }
+
+    .design-panel { display: none; padding: 32px 16px 80px; }
+    .design-panel.is-active { display: block; }
+
+    .design-meta {
+      max-width: 900px;
+      margin: 0 auto 28px;
+    }
+    .design-meta .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .design-meta h2 { font-size: 1.5rem; margin-bottom: 6px; }
+    .design-meta p { font-size: 0.88rem; color: #888; line-height: 1.7; }
+
+    /* Mobile phone frame */
+    .frame-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .phone-frame {
+      width: 375px;
+      min-height: 680px;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.1);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .phone-label {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.76rem;
+      color: #555;
+      letter-spacing: 0.08em;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       案A — ガッツリ系ブラック
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .a-root {
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.016) 0, rgba(255,255,255,0.016) 1px, transparent 1px, transparent 40px),
+        radial-gradient(ellipse 100% 38% at top, rgba(90,18,4,0.38) 0%, transparent 100%),
+        linear-gradient(180deg, #130f0b 0%, #0e0d0b 60%, #090808 100%);
+      font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+      color: #f0ece3;
+      padding: 20px 16px 100px;
+      min-height: 680px;
+    }
+
+    .a-hero {
+      background: linear-gradient(145deg, rgba(26,22,16,0.99), rgba(16,14,10,0.98));
+      border: 1px solid rgba(245,200,0,0.22);
+      border-top: 3px solid #f5c800;
+      border-radius: 18px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .a-hero::after {
+      content: "二郎";
+      position: absolute; right: -14px; bottom: -44px;
+      font-family: "Dela Gothic One", sans-serif;
+      font-size: 9rem; line-height: 1;
+      color: rgba(245,200,0,0.05);
+      pointer-events: none; user-select: none;
+    }
+    .a-eyebrow {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #f5c800; margin-bottom: 6px;
+    }
+    .a-hero h1 {
+      font-family: "Dela Gothic One", sans-serif;
+      font-size: 2.8rem; line-height: 0.94; color: #f0ece3;
+      margin-bottom: 10px;
+    }
+    .a-stamp {
+      display: inline-block;
+      padding: 3px 10px;
+      border: 1px solid rgba(245,200,0,0.5);
+      border-radius: 3px;
+      color: #f5c800; font-family: "Dela Gothic One", sans-serif;
+      font-size: 0.65rem; letter-spacing: 0.1em;
+      background: rgba(245,200,0,0.07);
+      transform: rotate(-2deg); margin-bottom: 14px;
+      display: inline-block;
+    }
+    .a-meter-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+    }
+    .a-stat {
+      background: rgba(22,20,15,0.98);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: 2px solid rgba(245,200,0,0.4);
+      border-radius: 12px; padding: 12px 14px;
+    }
+    .a-stat p { font-size: 0.68rem; color: #6e6760; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+    .a-stat strong { font-family: "Dela Gothic One", sans-serif; font-size: 1.8rem; display: block; color: #f0ece3; }
+    .a-stat span { font-size: 0.72rem; color: #6e6760; }
+
+    .a-card {
+      background: rgba(20,18,14,0.98);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 4px solid #f5c800;
+      border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .a-card.wishlist { border-left-color: #5a8c26; }
+    .a-card.unvisited { border-left-color: rgba(255,255,255,0.1); }
+
+    .a-card__top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .a-card h3 { font-family: "Dela Gothic One", sans-serif; font-size: 1.05rem; color: #f0ece3; }
+    .a-card p { font-size: 0.82rem; color: #6e6760; margin-top: 2px; }
+
+    .a-pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 4px;
+      font-family: "Dela Gothic One", sans-serif;
+      font-size: 0.68rem; border: 1px solid transparent;
+    }
+    .a-pill.visited { color: #f5c800; background: rgba(245,200,0,0.14); border-color: rgba(245,200,0,0.3); }
+    .a-pill.wishlist { color: #5a8c26; background: rgba(90,140,38,0.14); border-color: rgba(90,140,38,0.3); }
+    .a-pill.unvisited { color: #6e6760; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+
+    .a-cta { color: #f5c800; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; display: block; text-align: right; margin-top: 8px; }
+
+    .a-buttons { display: flex; gap: 8px; margin-bottom: 14px; }
+    .a-btn-primary {
+      flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #f5c800;
+      background: #f5c800; color: #0a0908;
+      font-family: "Dela Gothic One", sans-serif; font-size: 0.88rem;
+      text-align: center; cursor: pointer;
+      box-shadow: 0 8px 28px rgba(245,200,0,0.32);
+    }
+    .a-btn-ghost {
+      flex: 1; padding: 12px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(28,26,20,0.9); color: #6e6760;
+      font-size: 0.88rem; font-weight: 700; text-align: center; cursor: pointer;
+    }
+
+    .a-tabbar {
+      position: absolute; bottom: 12px; left: 12px; right: 12px;
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+      padding: 8px; border-radius: 18px;
+      background: rgba(12,11,9,0.97);
+      border: 1px solid rgba(245,200,0,0.2);
+      box-shadow: 0 -3px 0 rgba(245,200,0,0.45), 0 16px 44px rgba(0,0,0,0.65);
+    }
+    .a-tabitem {
+      padding: 10px 4px; border-radius: 12px; text-align: center;
+      font-size: 0.72rem; font-weight: 700; color: #6e6760;
+    }
+    .a-tabitem.active {
+      background: #f5c800; color: #0a0908;
+      font-family: "Dela Gothic One", sans-serif;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       案B — スタンプラリー手帳
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .b-root {
+      background:
+        radial-gradient(ellipse at top left, rgba(180,140,90,0.18) 0%, transparent 45%),
+        repeating-linear-gradient(0deg, rgba(100,70,30,0.045) 0, rgba(100,70,30,0.045) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg, rgba(100,70,30,0.025) 0, rgba(100,70,30,0.025) 1px, transparent 1px, transparent 32px),
+        linear-gradient(160deg, #f4e8d2 0%, #edddc3 40%, #e5d0b0 100%);
+      font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", serif;
+      color: #2c1810;
+      padding: 20px 16px 100px;
+      min-height: 680px;
+    }
+
+    .b-hero {
+      background: rgba(255,248,235,0.85);
+      border: 1px solid rgba(160,110,50,0.2);
+      border-radius: 6px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 20px rgba(100,60,20,0.1), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .b-hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(180,140,80,0.07) 31px, rgba(180,140,80,0.07) 32px);
+      pointer-events: none;
+    }
+    .b-hero::after {
+      content: "完";
+      position: absolute; right: 16px; top: 16px;
+      width: 64px; height: 64px;
+      border: 3px solid rgba(192,57,43,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Zen Old Mincho", serif;
+      font-size: 1.8rem; color: rgba(192,57,43,0.25);
+      line-height: 64px; text-align: center;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+    .b-eyebrow {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: #8b4a2a; margin-bottom: 6px;
+      font-family: "Shippori Mincho B1", serif;
+    }
+    .b-hero h1 {
+      font-family: "Zen Old Mincho", "Hiragino Mincho ProN", serif;
+      font-size: 2.4rem; line-height: 0.95; color: #2c1810;
+      margin-bottom: 10px; font-weight: 900;
+    }
+    .b-stamp-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border: 2px solid rgba(192,57,43,0.4);
+      border-radius: 2px;
+      color: rgba(192,57,43,0.7);
+      font-family: "Zen Old Mincho", serif;
+      font-size: 0.72rem; letter-spacing: 0.1em;
+      transform: rotate(-3deg);
+      margin-bottom: 14px;
+      position: relative; z-index: 1;
+    }
+    .b-meter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .b-stat {
+      background: rgba(255,248,230,0.9);
+      border: 1px solid rgba(160,110,50,0.18);
+      border-radius: 4px; padding: 12px 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    .b-stat p { font-size: 0.68rem; color: #8b6914; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; font-family: "Shippori Mincho B1"; }
+    .b-stat strong { font-family: "Zen Old Mincho", serif; font-size: 1.8rem; display: block; color: #2c1810; font-weight: 900; }
+    .b-stat span { font-size: 0.72rem; color: #8b6914; }
+
+    .b-card {
+      background: rgba(255,249,238,0.92);
+      border: 1px solid rgba(160,110,50,0.15);
+      border-radius: 4px; padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(100,60,20,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
+      position: relative;
+    }
+    .b-card::before {
+      content: "";
+      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+      background: rgba(160,110,50,0.15);
+      border-radius: 4px 0 0 4px;
+    }
+    .b-card.visited::before { background: rgba(192,57,43,0.55); }
+    .b-card.wishlist::before { background: rgba(74,103,65,0.55); }
+
+    .b-card__top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .b-card h3 { font-family: "Zen Old Mincho", serif; font-size: 1.05rem; color: #2c1810; font-weight: 700; }
+    .b-card p { font-size: 0.82rem; color: #8b6914; margin-top: 2px; font-family: "Shippori Mincho B1"; }
+
+    .b-stamp {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2.5px solid rgba(192,57,43,0.45);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Zen Old Mincho", serif;
+      font-size: 0.7rem; color: rgba(192,57,43,0.55);
+      flex-shrink: 0; letter-spacing: 0.04em;
+      background: rgba(192,57,43,0.04);
+    }
+    .b-stamp.filled {
+      border-color: rgba(192,57,43,0.8);
+      color: rgba(192,57,43,0.8);
+      background: rgba(192,57,43,0.07);
+      font-size: 1rem; font-weight: 900;
+    }
+    .b-stamp.green.filled {
+      border-color: rgba(74,103,65,0.8);
+      color: rgba(74,103,65,0.8);
+      background: rgba(74,103,65,0.07);
+    }
+
+    .b-cta { color: #8b4a2a; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; display: block; text-align: right; margin-top: 8px; font-family: "Shippori Mincho B1"; }
+
+    .b-buttons { display: flex; gap: 8px; margin-bottom: 14px; }
+    .b-btn-primary {
+      flex: 1; padding: 12px; border-radius: 3px;
+      border: 1px solid #c0392b;
+      background: #c0392b; color: #fff;
+      font-family: "Zen Old Mincho", serif; font-size: 0.88rem; font-weight: 700;
+      text-align: center; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(192,57,43,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .b-btn-ghost {
+      flex: 1; padding: 12px; border-radius: 3px;
+      border: 1px solid rgba(160,110,50,0.3);
+      background: rgba(255,248,232,0.9); color: #8b6914;
+      font-family: "Shippori Mincho B1", serif; font-size: 0.88rem; font-weight: 700;
+      text-align: center; cursor: pointer;
+    }
+
+    .b-tabbar {
+      position: absolute; bottom: 12px; left: 12px; right: 12px;
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+      padding: 8px; border-radius: 6px;
+      background: rgba(255,246,228,0.97);
+      border: 1px solid rgba(160,110,50,0.2);
+      box-shadow: 0 -2px 0 rgba(192,57,43,0.3), 0 8px 24px rgba(100,60,20,0.12);
+    }
+    .b-tabitem {
+      padding: 10px 4px; border-radius: 4px; text-align: center;
+      font-size: 0.72rem; font-weight: 700; color: #8b6914;
+      font-family: "Shippori Mincho B1";
+    }
+    .b-tabitem.active {
+      background: #c0392b; color: #fff;
+      font-family: "Zen Old Mincho", serif;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       案C — ラーメン屋のメニューボード
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .c-root {
+      background:
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 12px),
+        linear-gradient(180deg, #0d0d0d 0%, #111 100%);
+      font-family: "DotGothic16", "BIZ UDPGothic", monospace;
+      color: #f5f5f0;
+      padding: 20px 16px 100px;
+      min-height: 680px;
+    }
+
+    .c-section-label {
+      background: #e01010;
+      padding: 6px 12px;
+      font-family: "Kaisei Decol", "BIZ UDPGothic", sans-serif;
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.18em; color: #fff;
+      text-transform: uppercase;
+      display: inline-block;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+      padding-right: 20px;
+      margin-bottom: 8px;
+    }
+
+    .c-hero {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: 0;
+      padding: 0;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .c-hero-header {
+      background: #e01010;
+      padding: 14px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .c-hero-header h1 {
+      font-family: "Kaisei Decol", sans-serif;
+      font-size: 1.9rem; line-height: 1; color: #fff;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    }
+    .c-badge {
+      background: #ffe100; color: #0d0d0d;
+      font-family: "DotGothic16", monospace; font-size: 0.68rem;
+      padding: 4px 8px; font-weight: 700; letter-spacing: 0.06em;
+      border-radius: 2px;
+    }
+    .c-hero-body { padding: 14px 16px; }
+    .c-meter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .c-stat {
+      background: #222; border: 1px solid rgba(255,255,255,0.1);
+      padding: 10px 12px; border-top: 2px solid #e01010;
+    }
+    .c-stat p { font-size: 0.64rem; color: #888; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+    .c-stat strong { font-family: "Kaisei Decol", sans-serif; font-size: 1.7rem; display: block; color: #ffe100; }
+    .c-stat span { font-size: 0.66rem; color: #666; }
+
+    .c-list-header {
+      display: grid; grid-template-columns: 1fr auto;
+      background: #222; border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 6px 12px;
+      font-size: 0.64rem; color: #888; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0;
+    }
+
+    .c-card {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 4px solid rgba(255,255,255,0.1);
+      padding: 12px 14px; margin-bottom: 6px;
+      display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+    }
+    .c-card.visited { border-left-color: #e01010; }
+    .c-card.wishlist { border-left-color: #5a8c26; }
+
+    .c-card h3 { font-family: "Kaisei Decol", sans-serif; font-size: 1rem; color: #f5f5f0; line-height: 1.2; }
+    .c-card p { font-size: 0.74rem; color: #666; margin-top: 2px; }
+
+    .c-pill {
+      display: inline-block; padding: 3px 6px;
+      font-family: "DotGothic16", monospace; font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.06em; border-radius: 2px;
+    }
+    .c-pill.visited { background: rgba(224,16,16,0.2); color: #e01010; border: 1px solid rgba(224,16,16,0.4); }
+    .c-pill.wishlist { background: rgba(90,140,38,0.2); color: #7ab83a; border: 1px solid rgba(90,140,38,0.4); }
+    .c-pill.unvisited { background: rgba(255,255,255,0.06); color: #666; border: 1px solid rgba(255,255,255,0.1); }
+
+    .c-buttons { display: flex; gap: 6px; margin-bottom: 12px; }
+    .c-btn-primary {
+      flex: 1; padding: 12px 8px; border: 2px solid #e01010;
+      background: #e01010; color: #fff;
+      font-family: "Kaisei Decol", sans-serif; font-size: 0.88rem;
+      text-align: center; cursor: pointer; letter-spacing: 0.04em;
+    }
+    .c-btn-ghost {
+      flex: 1; padding: 12px 8px; border: 1px solid rgba(255,255,255,0.2);
+      background: transparent; color: #888;
+      font-family: "DotGothic16", monospace; font-size: 0.82rem;
+      text-align: center; cursor: pointer;
+    }
+
+    .c-tabbar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      display: grid; grid-template-columns: repeat(4,1fr);
+      background: #0d0d0d;
+      border-top: 2px solid #e01010;
+    }
+    .c-tabitem {
+      padding: 14px 4px 10px;
+      text-align: center;
+      font-family: "DotGothic16", monospace;
+      font-size: 0.66rem; color: #555;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .c-tabitem:last-child { border-right: 0; }
+    .c-tabitem.active {
+      background: #e01010; color: #fff;
+    }
+    .c-tabitem .c-icon {
+      display: block; font-size: 1rem; margin-bottom: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Page header ── -->
+  <header class="page-header">
+    <h1>ラーメン二郎訪問ログ — デザインプレビュー</h1>
+    <div class="tab-switcher">
+      <button class="tab-btn is-active" data-tab="a">案A　ガッツリ系ブラック</button>
+      <button class="tab-btn" data-tab="b">案B　スタンプラリー手帳</button>
+      <button class="tab-btn" data-tab="c">案C　ラーメン屋のメニューボード</button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════
+       案A — ガッツリ系ブラック
+  ══════════════════════════════════════ -->
+  <div class="design-panel is-active" id="panel-a">
+    <div class="design-meta">
+      <span class="tag" style="background:rgba(245,200,0,0.15);color:#f5c800;border:1px solid rgba(245,200,0,0.3);">★ 現在実装中</span>
+      <h2 style="color:#f0ece3;font-family:'Dela Gothic One',sans-serif;">案A — ガッツリ系ブラック</h2>
+      <p>二郎の荒々しいカルチャーを正面から表現。漆黒の背景に炎のような赤、Dela Gothic One の骨太フォントで「行列の緊張感」を再現。地図タイルも暗くフィルター済み。</p>
+    </div>
+    <div class="frame-wrapper">
+      <!-- MAP TAB -->
+      <div>
+        <div class="phone-frame">
+          <div class="a-root">
+            <div class="a-hero">
+              <div class="a-stamp">Current 45 Stores</div>
+              <div class="a-eyebrow">Map First Jiro Log</div>
+              <h1>二郎訪問ログ</h1>
+              <div class="a-meter-row">
+                <div class="a-stat">
+                  <p>訪問済み</p>
+                  <strong>12</strong>
+                  <span>達成率 26%</span>
+                </div>
+                <div class="a-stat">
+                  <p>行きたい</p>
+                  <strong>8</strong>
+                  <span>気になる店舗</span>
+                </div>
+                <div class="a-stat">
+                  <p>ランキング</p>
+                  <strong>12</strong>
+                  <span>並び替えで管理</span>
+                </div>
+                <div class="a-stat">
+                  <p>メモ</p>
+                  <strong>5</strong>
+                  <span>現行45店 / 履歴1店</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Map placeholder -->
+            <div style="height:200px;background:linear-gradient(135deg,#151210,#1a1510);border:1px solid rgba(245,200,0,0.15);border-radius:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:#3a3530;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.012) 0,rgba(255,255,255,0.012) 1px,transparent 1px,transparent 30px),repeating-linear-gradient(90deg,rgba(255,255,255,0.012) 0,rgba(255,255,255,0.012) 1px,transparent 1px,transparent 30px);"></div>
+              <span style="position:relative;z-index:1;">地図エリア（ダークフィルター適用）</span>
+              <!-- Fake markers -->
+              <div style="position:absolute;top:40%;left:30%;width:18px;height:18px;border-radius:50%;background:#1a1410;border:2px solid #f5c800;box-shadow:0 0 10px rgba(245,200,0,0.4);"></div>
+              <div style="position:absolute;top:55%;left:58%;width:14px;height:14px;border-radius:50%;background:#1a1410;border:2px solid rgba(110,103,96,0.5);"></div>
+              <div style="position:absolute;top:30%;left:70%;width:14px;height:14px;border-radius:50%;background:#1a1410;border:2px solid #5a8c26;"></div>
+            </div>
+
+            <div class="a-buttons">
+              <div class="a-btn-primary">記録を編集</div>
+              <div class="a-btn-ghost">リセット</div>
+            </div>
+          </div>
+          <div class="a-tabbar">
+            <div class="a-tabitem active">地図</div>
+            <div class="a-tabitem">店舗</div>
+            <div class="a-tabitem">順位</div>
+            <div class="a-tabitem">メモ</div>
+          </div>
+        </div>
+        <p class="phone-label">地図タブ</p>
+      </div>
+
+      <!-- STORES TAB -->
+      <div>
+        <div class="phone-frame">
+          <div class="a-root" style="padding-top:16px;">
+            <div style="margin-bottom:14px;">
+              <div class="a-eyebrow">Store Ledger</div>
+              <h1 style="font-family:'Dela Gothic One',sans-serif;font-size:2rem;color:#f0ece3;">店舗一覧</h1>
+            </div>
+            <div style="background:rgba(16,14,10,0.97);border:1px solid rgba(245,200,0,0.2);border-radius:14px;padding:10px;margin-bottom:14px;">
+              <div style="background:rgba(28,26,20,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;color:#6e6760;font-size:0.82rem;margin-bottom:8px;">店舗名、都道府県、エリアで検索</div>
+              <div style="display:flex;gap:6px;">
+                <div style="padding:8px 14px;border-radius:8px;background:rgba(245,200,0,0.14);color:#f5c800;border:1px solid rgba(245,200,0,0.4);font-size:0.78rem;font-weight:700;">すべて</div>
+                <div style="padding:8px 14px;border-radius:8px;background:rgba(28,26,20,0.9);color:#6e6760;border:1px solid rgba(255,255,255,0.1);font-size:0.78rem;font-weight:700;">行った</div>
+                <div style="padding:8px 14px;border-radius:8px;background:rgba(28,26,20,0.9);color:#6e6760;border:1px solid rgba(255,255,255,0.1);font-size:0.78rem;font-weight:700;">行きたい</div>
+                <div style="padding:8px 14px;border-radius:8px;background:rgba(28,26,20,0.9);color:#6e6760;border:1px solid rgba(255,255,255,0.1);font-size:0.78rem;font-weight:700;">未訪問</div>
+              </div>
+            </div>
+
+            <div class="a-card">
+              <div class="a-card__top">
+                <div>
+                  <div style="font-size:0.66rem;color:#6e6760;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">東京都</div>
+                  <h3>三田本店</h3>
+                  <p>港区</p>
+                </div>
+                <span class="a-pill visited">行った</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:0.8rem;color:#6e6760;">
+                <span>最終訪問 2026-02-14</span>
+                <span>初訪問 2024-06-01</span>
+              </div>
+              <div class="a-cta">記録をひらく →</div>
+            </div>
+
+            <div class="a-card wishlist">
+              <div class="a-card__top">
+                <div>
+                  <div style="font-size:0.66rem;color:#6e6760;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">東京都</div>
+                  <h3>新宿歌舞伎町店</h3>
+                  <p>新宿区</p>
+                </div>
+                <span class="a-pill wishlist">行きたい</span>
+              </div>
+              <div style="font-size:0.8rem;color:#6e6760;margin-top:8px;">気になる店舗として保存中</div>
+              <div class="a-cta">記録をひらく →</div>
+            </div>
+
+            <div class="a-card unvisited">
+              <div class="a-card__top">
+                <div>
+                  <div style="font-size:0.66rem;color:#6e6760;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">北海道</div>
+                  <h3>札幌店</h3>
+                  <p>札幌市北区</p>
+                </div>
+                <span class="a-pill unvisited">未訪問</span>
+              </div>
+              <div style="font-size:0.8rem;color:#6e6760;margin-top:8px;">まだ記録なし</div>
+              <div class="a-cta">記録をひらく →</div>
+            </div>
+          </div>
+          <div class="a-tabbar">
+            <div class="a-tabitem">地図</div>
+            <div class="a-tabitem active">店舗</div>
+            <div class="a-tabitem">順位</div>
+            <div class="a-tabitem">メモ</div>
+          </div>
+        </div>
+        <p class="phone-label">店舗一覧タブ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       案B — スタンプラリー手帳
+  ══════════════════════════════════════ -->
+  <div class="design-panel" id="panel-b">
+    <div class="design-meta">
+      <span class="tag" style="background:rgba(192,57,43,0.1);color:#c0392b;border:1px solid rgba(192,57,43,0.25);">案B</span>
+      <h2 style="color:#2c1810;font-family:'Zen Old Mincho',serif;">案B — スタンプラリー手帳</h2>
+      <p style="color:#8b6914;">鉄印帳・パスポート・旅の記録ノートをイメージ。罫線入りの和紙テクスチャ、朱赤のスタンプ、明朝体の文字が「コレクターの旅」感を演出。達成感を視覚化するスタンプUI。</p>
+    </div>
+    <div class="frame-wrapper">
+      <!-- MAP TAB -->
+      <div>
+        <div class="phone-frame">
+          <div class="b-root">
+            <div class="b-hero">
+              <div class="b-stamp-badge">Current 45 Stores</div>
+              <div class="b-eyebrow">Map First Jiro Log</div>
+              <h1>二郎訪問ログ</h1>
+              <div class="b-meter-row">
+                <div class="b-stat">
+                  <p>訪問済み</p>
+                  <strong>12</strong>
+                  <span>達成率 26%</span>
+                </div>
+                <div class="b-stat">
+                  <p>行きたい</p>
+                  <strong>8</strong>
+                  <span>気になる店舗</span>
+                </div>
+                <div class="b-stat">
+                  <p>ランキング</p>
+                  <strong>12</strong>
+                  <span>並び替えで管理</span>
+                </div>
+                <div class="b-stat">
+                  <p>メモ</p>
+                  <strong>5</strong>
+                  <span>現行45店 / 履歴1店</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Map placeholder -->
+            <div style="height:190px;background:rgba(255,248,230,0.85);border:1px solid rgba(160,110,50,0.2);border-radius:6px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:#c8a878;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(100,70,30,0.04) 0,rgba(100,70,30,0.04) 1px,transparent 1px,transparent 28px),repeating-linear-gradient(90deg,rgba(100,70,30,0.02) 0,rgba(100,70,30,0.02) 1px,transparent 1px,transparent 28px);"></div>
+              <span style="position:relative;">地図エリア</span>
+              <div style="position:absolute;top:40%;left:35%;width:18px;height:18px;border-radius:50%;background:rgba(255,248,230,0.98);border:2px solid #c0392b;"></div>
+              <div style="position:absolute;top:58%;left:62%;width:14px;height:14px;border-radius:50%;background:rgba(255,248,230,0.98);border:2px solid rgba(160,110,50,0.5);"></div>
+              <div style="position:absolute;top:28%;left:72%;width:14px;height:14px;border-radius:50%;background:rgba(255,248,230,0.98);border:2px solid #4a6741;"></div>
+            </div>
+
+            <div class="b-buttons">
+              <div class="b-btn-primary">記録を編集</div>
+              <div class="b-btn-ghost">リセット</div>
+            </div>
+          </div>
+          <div class="b-tabbar">
+            <div class="b-tabitem active">地図</div>
+            <div class="b-tabitem">店舗</div>
+            <div class="b-tabitem">順位</div>
+            <div class="b-tabitem">メモ</div>
+          </div>
+        </div>
+        <p class="phone-label" style="color:#888;">地図タブ</p>
+      </div>
+
+      <!-- STORES TAB -->
+      <div>
+        <div class="phone-frame">
+          <div class="b-root" style="padding-top:16px;">
+            <div style="margin-bottom:14px;">
+              <div class="b-eyebrow">Store Ledger</div>
+              <h1 style="font-family:'Zen Old Mincho',serif;font-size:2rem;color:#2c1810;">店舗一覧</h1>
+            </div>
+
+            <div style="background:rgba(255,248,230,0.92);border:1px solid rgba(160,110,50,0.2);border-radius:4px;padding:10px;margin-bottom:14px;box-shadow:0 2px 8px rgba(100,60,20,0.07);">
+              <div style="background:rgba(255,253,245,0.9);border:1px solid rgba(160,110,50,0.15);border-radius:3px;padding:10px 12px;color:#b8a080;font-size:0.82rem;margin-bottom:8px;font-family:'Shippori Mincho B1';">店舗名、都道府県、エリアで検索</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <div style="padding:7px 12px;border-radius:3px;background:#c0392b;color:#fff;font-size:0.76rem;font-weight:700;font-family:'Zen Old Mincho',serif;">すべて</div>
+                <div style="padding:7px 12px;border-radius:3px;background:rgba(255,248,230,0.9);color:#8b6914;border:1px solid rgba(160,110,50,0.2);font-size:0.76rem;font-weight:700;font-family:'Shippori Mincho B1';">行った</div>
+                <div style="padding:7px 12px;border-radius:3px;background:rgba(255,248,230,0.9);color:#8b6914;border:1px solid rgba(160,110,50,0.2);font-size:0.76rem;font-weight:700;font-family:'Shippori Mincho B1';">行きたい</div>
+                <div style="padding:7px 12px;border-radius:3px;background:rgba(255,248,230,0.9);color:#8b6914;border:1px solid rgba(160,110,50,0.2);font-size:0.76rem;font-weight:700;font-family:'Shippori Mincho B1';">未訪問</div>
+              </div>
+            </div>
+
+            <div class="b-card visited">
+              <div class="b-card__top">
+                <div>
+                  <div style="font-size:0.64rem;color:#8b6914;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;font-family:'Shippori Mincho B1';">東京都</div>
+                  <h3>三田本店</h3>
+                  <p>港区</p>
+                </div>
+                <div class="b-stamp filled">済</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#8b6914;margin-top:6px;font-family:'Shippori Mincho B1';">
+                <span>最終訪問 2026-02-14</span>
+              </div>
+              <div class="b-cta">記録をひらく →</div>
+            </div>
+
+            <div class="b-card wishlist">
+              <div class="b-card__top">
+                <div>
+                  <div style="font-size:0.64rem;color:#8b6914;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;font-family:'Shippori Mincho B1';">東京都</div>
+                  <h3>新宿歌舞伎町店</h3>
+                  <p>新宿区</p>
+                </div>
+                <div class="b-stamp green filled">☆</div>
+              </div>
+              <div style="font-size:0.78rem;color:#8b6914;margin-top:6px;font-family:'Shippori Mincho B1';">気になる店舗として保存中</div>
+              <div class="b-cta">記録をひらく →</div>
+            </div>
+
+            <div class="b-card">
+              <div class="b-card__top">
+                <div>
+                  <div style="font-size:0.64rem;color:#8b6914;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;font-family:'Shippori Mincho B1';">北海道</div>
+                  <h3>札幌店</h3>
+                  <p>札幌市北区</p>
+                </div>
+                <div class="b-stamp">未</div>
+              </div>
+              <div style="font-size:0.78rem;color:#8b6914;margin-top:6px;font-family:'Shippori Mincho B1';">まだ記録なし</div>
+              <div class="b-cta">記録をひらく →</div>
+            </div>
+          </div>
+          <div class="b-tabbar">
+            <div class="b-tabitem">地図</div>
+            <div class="b-tabitem active">店舗</div>
+            <div class="b-tabitem">順位</div>
+            <div class="b-tabitem">メモ</div>
+          </div>
+        </div>
+        <p class="phone-label" style="color:#888;">店舗一覧タブ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       案C — ラーメン屋のメニューボード
+  ══════════════════════════════════════ -->
+  <div class="design-panel" id="panel-c">
+    <div class="design-meta">
+      <span class="tag" style="background:rgba(224,16,16,0.15);color:#ffe100;border:1px solid rgba(255,225,0,0.3);">案C</span>
+      <h2 style="color:#f5f5f0;font-family:'Kaisei Decol',sans-serif;">案C — ラーメン屋のメニューボード</h2>
+      <p>昭和〜平成の中華料理屋・ラーメン屋の壁メニュー感。鮮烈な赤のヘッダーパネル、黄色い数字、暗い壁面。Kaisei Decol フォントの「レトロな力強さ」が食欲をそそる。</p>
+    </div>
+    <div class="frame-wrapper">
+      <!-- MAP TAB -->
+      <div>
+        <div class="phone-frame">
+          <div class="c-root">
+            <div class="c-section-label">Map First Jiro Log</div>
+            <div class="c-hero">
+              <div class="c-hero-header">
+                <h1>二郎訪問ログ</h1>
+                <span class="c-badge">45店舗</span>
+              </div>
+              <div class="c-hero-body">
+                <div class="c-meter-row">
+                  <div class="c-stat">
+                    <p>訪問済み</p>
+                    <strong>12</strong>
+                    <span>達成率 26%</span>
+                  </div>
+                  <div class="c-stat">
+                    <p>行きたい</p>
+                    <strong>8</strong>
+                    <span>気になる</span>
+                  </div>
+                  <div class="c-stat">
+                    <p>ランキング</p>
+                    <strong>12</strong>
+                    <span>並び替え管理</span>
+                  </div>
+                  <div class="c-stat">
+                    <p>メモ</p>
+                    <strong>5</strong>
+                    <span>現行45 / 履歴1</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Map placeholder -->
+            <div style="height:185px;background:#141414;border:1px solid rgba(255,255,255,0.1);margin-bottom:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 28px),repeating-linear-gradient(90deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 28px);"></div>
+              <span style="color:#333;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;position:relative;">地図エリア</span>
+              <div style="position:absolute;top:40%;left:35%;width:16px;height:16px;border-radius:50%;background:#141414;border:2px solid #e01010;"></div>
+              <div style="position:absolute;top:58%;left:62%;width:13px;height:13px;border-radius:50%;background:#141414;border:2px solid rgba(255,255,255,0.25);"></div>
+              <div style="position:absolute;top:28%;left:72%;width:13px;height:13px;border-radius:50%;background:#141414;border:2px solid #5a8c26;"></div>
+            </div>
+
+            <div class="c-buttons">
+              <div class="c-btn-primary">記録を編集</div>
+              <div class="c-btn-ghost">リセット</div>
+            </div>
+          </div>
+          <div class="c-tabbar">
+            <div class="c-tabitem active"><span class="c-icon">🗺</span>地図</div>
+            <div class="c-tabitem"><span class="c-icon">📋</span>店舗</div>
+            <div class="c-tabitem"><span class="c-icon">🏆</span>順位</div>
+            <div class="c-tabitem"><span class="c-icon">📝</span>メモ</div>
+          </div>
+        </div>
+        <p class="phone-label">地図タブ</p>
+      </div>
+
+      <!-- STORES TAB -->
+      <div>
+        <div class="phone-frame">
+          <div class="c-root" style="padding-top:16px;">
+            <div class="c-section-label">Store Ledger</div>
+            <div style="margin-bottom:12px;">
+              <div class="c-hero" style="margin-bottom:0;">
+                <div class="c-hero-header" style="padding:10px 14px;">
+                  <span style="font-family:'Kaisei Decol',sans-serif;font-size:1.4rem;color:#fff;">店舗一覧</span>
+                  <span class="c-badge">45店</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);padding:10px;margin-bottom:10px;">
+              <div style="background:#111;border:1px solid rgba(255,255,255,0.08);padding:10px;color:#555;font-size:0.78rem;margin-bottom:8px;font-family:'DotGothic16',monospace;">店舗名・都道府県・エリアで検索</div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <div style="padding:6px 12px;background:#e01010;color:#fff;font-size:0.72rem;font-family:'DotGothic16',monospace;">すべて</div>
+                <div style="padding:6px 12px;background:#222;color:#666;border:1px solid rgba(255,255,255,0.1);font-size:0.72rem;font-family:'DotGothic16',monospace;">行った</div>
+                <div style="padding:6px 12px;background:#222;color:#666;border:1px solid rgba(255,255,255,0.1);font-size:0.72rem;font-family:'DotGothic16',monospace;">行きたい</div>
+                <div style="padding:6px 12px;background:#222;color:#666;border:1px solid rgba(255,255,255,0.1);font-size:0.72rem;font-family:'DotGothic16',monospace;">未訪問</div>
+              </div>
+            </div>
+
+            <div class="c-card visited">
+              <div>
+                <div style="font-size:0.62rem;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;font-family:'DotGothic16',monospace;">東京都</div>
+                <h3>三田本店</h3>
+                <p>港区 / 最終訪問 2026-02-14</p>
+              </div>
+              <span class="c-pill visited">行った</span>
+            </div>
+
+            <div class="c-card wishlist">
+              <div>
+                <div style="font-size:0.62rem;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;font-family:'DotGothic16',monospace;">東京都</div>
+                <h3>新宿歌舞伎町店</h3>
+                <p>新宿区 / 気になる店舗として保存中</p>
+              </div>
+              <span class="c-pill wishlist">行きたい</span>
+            </div>
+
+            <div class="c-card">
+              <div>
+                <div style="font-size:0.62rem;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;font-family:'DotGothic16',monospace;">北海道</div>
+                <h3>札幌店</h3>
+                <p>札幌市北区 / まだ記録なし</p>
+              </div>
+              <span class="c-pill unvisited">未訪問</span>
+            </div>
+          </div>
+          <div class="c-tabbar">
+            <div class="c-tabitem"><span class="c-icon">🗺</span>地図</div>
+            <div class="c-tabitem active"><span class="c-icon">📋</span>店舗</div>
+            <div class="c-tabitem"><span class="c-icon">🏆</span>順位</div>
+            <div class="c-tabitem"><span class="c-icon">📝</span>メモ</div>
+          </div>
+        </div>
+        <p class="phone-label">店舗一覧タブ</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.design-panel');
+
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        tabs.forEach(t => t.classList.remove('is-active'));
+        panels.forEach(p => p.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        document.getElementById('panel-' + target).classList.add('is-active');
+      });
+    });
+  </script>
+</body>
+</html>

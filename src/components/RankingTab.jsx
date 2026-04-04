@@ -52,6 +52,9 @@ function RankingCard({
         <p>
           {store.prefecture} / {store.area}
         </p>
+        {store.storeStatus === 'closed' && (
+          <small>{store.statusNote ?? '閉店済みの履歴店'}</small>
+        )}
         <small>最終記録 {visitDate}</small>
         {store.record.note && <em>{store.record.note}</em>}
       </div>

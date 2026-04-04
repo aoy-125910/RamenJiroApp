@@ -3,7 +3,9 @@ import { StatusPill } from './StatusPill';
 export function StoreCard({ store, onOpen }) {
   const { record } = store;
   const summaryText =
-    record.status === 'visited'
+    store.storeStatus === 'closed'
+      ? store.statusNote ?? '閉店済みの履歴店'
+      : record.status === 'visited'
       ? record.lastVisitedOn
         ? `最終訪問 ${record.lastVisitedOn}`
         : '訪問記録あり'
@@ -14,7 +16,9 @@ export function StoreCard({ store, onOpen }) {
   return (
     <button
       type="button"
-      className={`store-card is-${record.status}`}
+      className={`store-card is-${record.status} ${
+        store.storeStatus === 'closed' ? 'is-store-closed' : ''
+      }`}
       onClick={() => onOpen(store.id)}
       aria-label={`${store.name} の記録を開く`}
     >
@@ -30,7 +34,12 @@ export function StoreCard({ store, onOpen }) {
           <h3>{store.name}</h3>
           <p className="store-card__area">{store.area}</p>
         </div>
-        <StatusPill status={record.status} />
+        <div className="store-card__badges">
+          {store.storeStatus === 'closed' && (
+            <span className="store-state-badge is-closed">閉店</span>
+          )}
+          <StatusPill status={record.status} />
+        </div>
       </div>
 
       <div className="store-card__meta">
