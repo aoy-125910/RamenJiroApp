@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildStoresWithRecords,
+  getJourneyStops,
   getLatestJourneyMilestone,
   getJourneyState,
   getProgressSnapshot
@@ -126,4 +127,16 @@ test('getLatestJourneyMilestone returns the latest crossed stage only on forward
   assert.equal(milestone?.title, '巡礼モード');
   assert.equal(milestone?.threshold, 9);
   assert.equal(noMilestone, null);
+});
+
+test('getJourneyStops marks current and next milestones for the route card', () => {
+  const stops = getJourneyStops({
+    visitedActiveCount: 10,
+    activeStoreCount: 45
+  });
+
+  assert.equal(stops[0].label, '1店');
+  assert.equal(stops.find((stop) => stop.isCurrent)?.threshold, 9);
+  assert.equal(stops.find((stop) => stop.isNext)?.threshold, 18);
+  assert.equal(stops.at(-1)?.positionPercent, 100);
 });

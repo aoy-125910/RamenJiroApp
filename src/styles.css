@@ -264,39 +264,6 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
-.hero-meter__ring {
-  min-height: 196px;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle, rgba(16, 14, 10, 0.98) 0 44%, transparent 45%),
-    conic-gradient(
-      from 180deg,
-      #f5c800 0 0.38turn,
-      rgba(255, 255, 255, 0.14) 0.38turn 0.58turn,
-      rgba(255, 255, 255, 0.04) 0.58turn 1turn
-    );
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 0 40px rgba(245, 200, 0, 0.1);
-}
-
-.hero-meter__ring strong {
-  display: block;
-  font-size: 2.5rem;
-  font-family: var(--heading-font);
-  color: var(--ink);
-}
-
-.hero-meter__ring span {
-  display: block;
-  margin-top: 0.3rem;
-  color: var(--subtle);
-  font-size: 0.82rem;
-}
-
 .hero-note {
   padding: 16px 18px;
   border-radius: 12px;
@@ -410,6 +377,272 @@ textarea:focus-visible {
   border-radius: inherit;
   background: linear-gradient(90deg, rgba(245, 200, 0, 0.88), rgba(255, 239, 160, 0.98));
   box-shadow: 0 0 18px rgba(245, 200, 0, 0.32);
+}
+
+.progress-route-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(26, 22, 16, 0.99), rgba(16, 14, 10, 0.98));
+  border: 1px solid rgba(245, 200, 0, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 34px rgba(0, 0, 0, 0.44);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-route-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top right, rgba(245, 200, 0, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 34%);
+  pointer-events: none;
+}
+
+.progress-route-card__heading,
+.progress-route-card__summary,
+.progress-route-card__detail {
+  position: relative;
+  z-index: 1;
+}
+
+.progress-route-card__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-route-card__hint {
+  color: var(--subtle);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.progress-route-card__summary {
+  display: grid;
+  gap: 14px;
+}
+
+.progress-route-card__value strong {
+  display: block;
+  font-size: clamp(2.8rem, 8vw, 4.2rem);
+  line-height: 0.92;
+  font-family: var(--heading-font);
+  color: var(--ink);
+  text-shadow: 0 0 28px rgba(245, 200, 0, 0.18);
+}
+
+.progress-route-card__value p,
+.progress-route-card__detail-label,
+.progress-route-card__detail-copy,
+.progress-route-card__detail-meta span {
+  margin: 0;
+  color: var(--subtle);
+}
+
+.progress-route-card__value p {
+  margin-top: 0.45rem;
+  font-size: 0.88rem;
+}
+
+.progress-route-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.progress-route-card__stats span,
+.progress-route-card__stop-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+.progress-route-card__rail {
+  position: relative;
+  z-index: 1;
+  padding-block: 8px 2px;
+}
+
+.progress-route-card__rail-track {
+  position: relative;
+  height: 32px;
+}
+
+.progress-route-card__rail-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 8px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+}
+
+.progress-route-card__rail-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 8px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, var(--accent), rgba(255, 238, 162, 0.98));
+  box-shadow: 0 0 20px rgba(245, 200, 0, 0.28);
+  transition: width 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progress-route-card__rail-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    transparent 0,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 100%
+  );
+  animation: progress-sheen 2200ms linear infinite;
+}
+
+.progress-route-card__stop-dot {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid rgba(255, 255, 255, 0.16);
+  background: rgba(18, 16, 12, 0.98);
+  box-shadow: 0 0 0 3px rgba(12, 11, 9, 0.9);
+}
+
+.progress-route-card__stop-dot.is-reached {
+  border-color: rgba(245, 200, 0, 0.7);
+  background: rgba(245, 200, 0, 0.2);
+}
+
+.progress-route-card__stop-dot.is-current,
+.progress-route-card__stop-dot.is-next {
+  box-shadow:
+    0 0 0 3px rgba(12, 11, 9, 0.9),
+    0 0 14px rgba(245, 200, 0, 0.24);
+}
+
+.progress-route-card__stop-dot.is-current {
+  animation: stop-pulse 1800ms ease-in-out infinite;
+}
+
+.progress-route-card__tracker {
+  position: absolute;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255, 245, 196, 0.95), rgba(245, 200, 0, 0.92));
+  border: 2px solid rgba(12, 11, 9, 0.82);
+  box-shadow:
+    0 0 0 5px rgba(245, 200, 0, 0.09),
+    0 0 18px rgba(245, 200, 0, 0.34);
+  animation: tracker-hover 2100ms ease-in-out infinite;
+}
+
+.progress-route-card__tracker::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(245, 200, 0, 0.22);
+  animation: tracker-pulse 1800ms ease-out infinite;
+}
+
+.progress-route-card__stop-list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.progress-route-card__stop-chip {
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.progress-route-card__stop-chip.is-reached {
+  border-color: rgba(245, 200, 0, 0.18);
+}
+
+.progress-route-card__stop-chip.is-next {
+  border-color: rgba(245, 200, 0, 0.34);
+}
+
+.progress-route-card__stop-chip.is-active,
+.progress-route-card__stop-chip:hover,
+.progress-route-card__stop-chip:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(245, 200, 0, 0.4);
+  background: rgba(245, 200, 0, 0.12);
+  color: var(--accent);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+.progress-route-card__detail {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.progress-route-card__detail-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.progress-route-card__detail strong {
+  display: block;
+  font-family: var(--heading-font);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.progress-route-card__detail-copy {
+  line-height: 1.66;
+  font-size: 0.88rem;
+}
+
+.progress-route-card__detail-meta {
+  display: grid;
+  gap: 6px;
+  font-size: 0.8rem;
 }
 
 .hero-strip,
@@ -1720,6 +1953,15 @@ textarea:focus-visible {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .progress-route-card__summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .progress-route-card__stats {
+    justify-content: end;
+  }
+
   .section-heading {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
@@ -1826,6 +2068,53 @@ textarea:focus-visible {
 
   100% {
     transform: translateX(120%);
+  }
+}
+
+@keyframes progress-sheen {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes stop-pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.14);
+  }
+}
+
+@keyframes tracker-hover {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-2px);
+  }
+}
+
+@keyframes tracker-pulse {
+  0% {
+    transform: scale(0.82);
+    opacity: 0.7;
+  }
+
+  80% {
+    transform: scale(1.26);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.26);
+    opacity: 0;
   }
 }
 

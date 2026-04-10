@@ -64,6 +64,35 @@ function buildJourneyStages(activeStoreCount) {
   );
 }
 
+export function getJourneyStops({ visitedActiveCount, activeStoreCount }) {
+  const normalizedActiveStoreCount = Math.max(0, activeStoreCount);
+  const normalizedVisitedActiveCount = Math.max(
+    0,
+    Math.min(visitedActiveCount, normalizedActiveStoreCount)
+  );
+  const stages = buildJourneyStages(normalizedActiveStoreCount).filter(
+    (stage) => stage.threshold > 0
+  );
+  const currentStage =
+    stages.filter((stage) => normalizedVisitedActiveCount >= stage.threshold).at(-1) ??
+    null;
+  const nextStage =
+    stages.find((stage) => normalizedVisitedActiveCount < stage.threshold) ?? null;
+
+  return stages.map((stage) => ({
+    ...stage,
+    label: `${stage.threshold}店`,
+    positionPercent:
+      normalizedActiveStoreCount === 0
+        ? 0
+        : (stage.threshold / normalizedActiveStoreCount) * 100,
+    remainingCount: Math.max(stage.threshold - normalizedVisitedActiveCount, 0),
+    isReached: normalizedVisitedActiveCount >= stage.threshold,
+    isCurrent: currentStage?.threshold === stage.threshold,
+    isNext: nextStage?.threshold === stage.threshold
+  }));
+}
+
 export function getLatestJourneyMilestone({
   previousVisitedActiveCount,
   visitedActiveCount,
@@ -216,6 +245,10 @@ export function getProgressSnapshot(storesWithRecords, rankingStoreIds) {
     activeStoreCount,
     archivedStoreCount,
     completionRate,
+    journeyStops: getJourneyStops({
+      visitedActiveCount,
+      activeStoreCount
+    }),
     rankedStores,
     noteStores,
     journey: getJourneyState({

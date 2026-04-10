@@ -3,6 +3,7 @@ import { BottomTabBar } from './components/BottomTabBar';
 import { JourneyCard } from './components/JourneyCard';
 import { MapPreview } from './components/MapPreview';
 import { MilestoneToast } from './components/MilestoneToast';
+import { ProgressRouteCard } from './components/ProgressRouteCard';
 import { RankingTab } from './components/RankingTab';
 import { RecordDrawer } from './components/RecordDrawer';
 import { StatusPill } from './components/StatusPill';
@@ -107,6 +108,7 @@ export default function App() {
     activeStoreCount,
     archivedStoreCount,
     completionRate,
+    journeyStops,
     rankedStores,
     noteStores,
     journey
@@ -369,13 +371,11 @@ export default function App() {
 
                 <div className="hero-aside">
                   <div className="hero-meter">
-                    <p className="hero-meter__label">全体の達成率</p>
-                    <div className="hero-meter__ring">
-                      <strong>{formatPercent(completionRate)}</strong>
-                      <span>
-                        {visitedActiveCount} / {activeStoreCount} 現行店舗
-                      </span>
-                    </div>
+                    <ProgressRouteCard
+                      completionRate={completionRate}
+                      journey={journey}
+                      journeyStops={journeyStops}
+                    />
                   </div>
 
                   <div className="hero-note">
