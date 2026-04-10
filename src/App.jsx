@@ -1,12 +1,19 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { BottomTabBar } from './components/BottomTabBar';
+import { JourneyCard } from './components/JourneyCard';
 import { MapPreview } from './components/MapPreview';
+import { MilestoneToast } from './components/MilestoneToast';
 import { RankingTab } from './components/RankingTab';
 import { RecordDrawer } from './components/RecordDrawer';
 import { StatusPill } from './components/StatusPill';
 import { StoreCard } from './components/StoreCard';
 import { storeDataMeta, stores } from './data/stores';
 import { createBackupPayload, parseBackupText } from './lib/backup';
+import {
+  buildStoresWithRecords,
+  getLatestJourneyMilestone,
+  getProgressSnapshot
+} from './lib/progress';
 import {
   createEmptyRecord,
   loadRanking,
@@ -22,6 +29,7 @@ const filterOptions = [
   { id: 'wishlist', label: '行きたい' },
   { id: 'not_visited', label: '未訪問' }
 ];
+const validStoreIds = new Set(stores.map((store) => store.id));
 
 function matchesFilter(statusFilter, store) {
   if (statusFilter === 'all') {
@@ -71,8 +79,10 @@ export default function App() {
   const [editingStoreId, setEditingStoreId] = useState(null);
   const [selectionSource, setSelectionSource] = useState('initial');
   const [backupFeedback, setBackupFeedback] = useState(null);
+  const [milestoneToast, setMilestoneToast] = useState(null);
   const importInputRef = useRef(null);
-  const validStoreIds = new Set(stores.map((store) => store.id));
+  const previousVisitedActiveCountRef = useRef(null);
+  const milestoneTimeoutRef = useRef(null);
 
   useEffect(() => {
     saveRecords(records);
@@ -82,43 +92,70 @@ export default function App() {
     saveRanking(rankingStoreIds);
   }, [rankingStoreIds]);
 
-  const rankingPositionByStoreId = new Map(
-    rankingStoreIds.map((storeId, index) => [storeId, index + 1])
+  const storesWithRecords = buildStoresWithRecords(
+    stores,
+    records,
+    rankingStoreIds,
+    createEmptyRecord
   );
+  const {
+    visitedStoreIds,
+    visitedCount,
+    visitedActiveCount,
+    wishlistCount,
+    prefectureCount,
+    activeStoreCount,
+    archivedStoreCount,
+    completionRate,
+    rankedStores,
+    noteStores,
+    journey
+  } = getProgressSnapshot(storesWithRecords, rankingStoreIds);
 
-  const storesWithRecords = stores.map((store) => ({
-    ...store,
-    record: {
-      ...createEmptyRecord(),
-      ...(records[store.id] ?? {})
-    },
-    rankingPosition: rankingPositionByStoreId.get(store.id) ?? null
-  }));
+  useEffect(() => {
+    const previousVisitedActiveCount = previousVisitedActiveCountRef.current;
+    previousVisitedActiveCountRef.current = visitedActiveCount;
 
-  const storeMap = new Map(storesWithRecords.map((store) => [store.id, store]));
-  const activeStores = storesWithRecords.filter(
-    (store) => store.storeStatus !== 'closed'
-  );
-  const visitedStoreIds = storesWithRecords
-    .filter((store) => store.record.status === 'visited')
-    .map((store) => store.id);
+    if (previousVisitedActiveCount === null) {
+      return;
+    }
 
-  const visitedCount = storesWithRecords.filter(
-    (store) => store.record.status === 'visited'
-  ).length;
-  const visitedActiveCount = activeStores.filter(
-    (store) => store.record.status === 'visited'
-  ).length;
-  const wishlistCount = storesWithRecords.filter(
-    (store) => store.record.status === 'wishlist'
-  ).length;
-  const prefectureCount = new Set(
-    storesWithRecords.map((store) => store.prefecture)
-  ).size;
-  const activeStoreCount = activeStores.length;
-  const archivedStoreCount = storesWithRecords.length - activeStoreCount;
-  const completionRate =
-    activeStoreCount === 0 ? 0 : (visitedActiveCount / activeStoreCount) * 100;
+    const milestone = getLatestJourneyMilestone({
+      previousVisitedActiveCount,
+      visitedActiveCount,
+      activeStoreCount
+    });
+
+    if (!milestone) {
+      return;
+    }
+
+    setMilestoneToast({
+      title: milestone.title,
+      description: milestone.description,
+      reachedLabel:
+        milestone.threshold === activeStoreCount
+          ? `現行 ${activeStoreCount} 店を完走しました`
+          : `現行 ${milestone.threshold} 店に到達しました`,
+      nextLabel: journey.nextLabel,
+      kind: milestone.threshold === activeStoreCount ? 'complete' : 'milestone'
+    });
+  }, [activeStoreCount, journey.nextLabel, visitedActiveCount]);
+
+  useEffect(() => {
+    if (!milestoneToast) {
+      return undefined;
+    }
+
+    window.clearTimeout(milestoneTimeoutRef.current);
+    milestoneTimeoutRef.current = window.setTimeout(() => {
+      setMilestoneToast(null);
+    }, 4200);
+
+    return () => {
+      window.clearTimeout(milestoneTimeoutRef.current);
+    };
+  }, [milestoneToast]);
 
   useEffect(() => {
     setRankingStoreIds((current) => {
@@ -135,23 +172,6 @@ export default function App() {
     (store) =>
       matchesFilter(statusFilter, store) && includesQuery(deferredQuery, store)
   );
-
-  const rankedStores = rankingStoreIds
-    .map((storeId) => storeMap.get(storeId))
-    .filter((store) => store?.record.status === 'visited');
-
-  const noteStores = storesWithRecords
-    .filter((store) => store.record.note)
-    .sort((left, right) => {
-      const dateLeft = left.record.lastVisitedOn || left.record.firstVisitedOn || '';
-      const dateRight = right.record.lastVisitedOn || right.record.firstVisitedOn || '';
-
-      if (dateLeft !== dateRight) {
-        return dateRight.localeCompare(dateLeft);
-      }
-
-      return left.name.localeCompare(right.name, 'ja');
-    });
 
   useEffect(() => {
     if (filteredStores.length === 0) {
@@ -344,11 +364,7 @@ export default function App() {
                 <div className="hero-copy">
                   <p className="eyebrow">Map First Jiro Log</p>
                   <h1>二郎訪問ログ</h1>
-                  <p className="hero-lead">
-                    店舗の位置を地図で見比べながら、訪問済み・行きたい・ランキングを1つのアプリで整理できます。
-                    iPhoneのホーム画面に追加しても使いやすいよう、片手操作を前提に整えています。
-                    現在は現行45店舗を基準にしつつ、履歴店も一緒に記録できます。
-                  </p>
+                  <JourneyCard journey={journey} />
                 </div>
 
                 <div className="hero-aside">
@@ -572,6 +588,11 @@ export default function App() {
       </main>
 
       <BottomTabBar activeTab={activeTab} onChange={setActiveTab} />
+
+      <MilestoneToast
+        milestone={milestoneToast}
+        onClose={() => setMilestoneToast(null)}
+      />
 
       <RecordDrawer
         store={editingStore}
